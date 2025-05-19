@@ -1,0 +1,20 @@
+services:
+    _defaults:
+        autowire: true
+        autoconfigure: true
+        public: false
+
+    Bluebranch\ImageAltAi\:
+        resource: '../../../src'
+        exclude: '../../../src/{Resources,DependencyInjection,Model,Tests,Migrations}'
+
+    Bluebranch\ImageAltAi\EventListener\UploadListener:
+        arguments:
+            - '@http_client'
+        tags:
+            - { name: 'contao.hook', hook: 'postUpload', method: '__invoke' }
+
+    Bluebranch\ImageAltAi\EventListener\TlSettingsCallback:
+        arguments:
+            - '@http_client'
+        public: true

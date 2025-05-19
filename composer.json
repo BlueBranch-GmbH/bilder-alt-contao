@@ -1,0 +1,26 @@
+{
+  "name": "bluebranch/image-alt-ai",
+  "description": "Automatische Generierung von Alt-Texten für Bilder in Contao. Besuchen Sie www.bilder-alt.de.",
+  "type": "contao-bundle",
+  "license": "MIT",
+  "version": "1.0.0",
+  "authors": [
+    {
+      "name": "Lukas M. Beck",
+      "email": "lb@bluebranch.de",
+      "homepage": "https://www.bluebranch.de/"
+    }
+  ],
+  "require": {
+    "php": "^7.4 || ^8.0",
+    "contao/core-bundle": "^4.13 || ^5.0"
+  },
+  "autoload": {
+    "psr-4": {
+      "Bluebranch\\ImageAltAi\\": "src/"
+    }
+  },
+  "extra": {
+    "contao-manager-plugin": "Bluebranch\\ImageAltAi\\ContaoManager\\Plugin"
+  }
+}

@@ -1,0 +1,3 @@
+bluebranch.image-alt-ai.controller:
+  resource: ../Controller
+  type: attribute

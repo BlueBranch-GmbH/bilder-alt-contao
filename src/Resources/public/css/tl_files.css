@@ -1,0 +1,36 @@
+.image_alt_ai_button {
+
+}
+
+.image_alt_ai_button.loading img {
+    display: none;
+}
+
+.image_alt_ai_button .loading {
+    display: inline-block;
+    position: relative;
+    width: 16px;
+}
+
+.image_alt_ai_button .loading:before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 10px;
+    height: 10px;
+    margin-top: -10px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    border-top-color: #000;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% {
+        transform: rotate(0deg);
+    }
+    100% {
+        transform: rotate(360deg);
+    }
+}
