@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Bluebranch\ImageAltAi;
+namespace Bluebranch\BilderAlt;
 
 use Symfony\Component\HttpKernel\Bundle\Bundle;
 
-class ImageAltAiBundle extends Bundle
+class BilderAltBundle extends Bundle
 {
 }

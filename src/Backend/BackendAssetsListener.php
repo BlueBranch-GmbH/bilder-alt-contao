@@ -1,6 +1,6 @@
 <?php
 
-namespace Bluebranch\ImageAltAi\Backend;
+namespace Bluebranch\BilderAlt\Backend;
 
 use Contao\Backend;
 use Contao\CoreBundle\ServiceAnnotation\Hook;
@@ -19,14 +19,14 @@ class BackendAssetsListener extends Backend
         }
 
         // JavaScript für die Dateiverwaltung laden
-        $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/imagealtai/js/tl_files.js|static';
-        $GLOBALS['TL_CSS'][] = 'bundles/imagealtai/css/tl_files.css';
+        $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/bilderalt/js/tl_files.js|static';
+        $GLOBALS['TL_CSS'][] = 'bundles/bilderalt/css/tl_files.css';
 
         // Button einfügen
-        $GLOBALS['TL_DCA']['tl_files']['list']['operations']['image_alt_ai_button'] = [
+        $GLOBALS['TL_DCA']['tl_files']['list']['operations']['bilder_alt_button'] = [
             'label' => ['Alt Text', 'Alt Text generieren'],
             'href' => 'key=',
-            'icon' => 'bundles/imagealtai/icons/ai.svg',
+            'icon' => 'bundles/bilderalt/icons/ai.svg',
             'button_callback' => [self::class, 'renderButton'],
         ];
     }
@@ -47,7 +47,7 @@ class BackendAssetsListener extends Backend
         $href = self::addToUrl($href . '&id=' . $row['id']);
 
         return sprintf(
-            '<a href="%s" title="%s" %s %s class="image_alt_ai_button">%s</a>',
+            '<a href="%s" title="%s" %s %s class="bilder_alt_button">%s</a>',
             $href,
             StringUtil::specialchars($title),
             $attributes,

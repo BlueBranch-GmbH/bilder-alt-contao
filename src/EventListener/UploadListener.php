@@ -1,13 +1,12 @@
 <?php
 
-namespace Bluebranch\ImageAltAi\EventListener;
+namespace Bluebranch\BilderAlt\EventListener;
 
-use Bluebranch\ImageAltAi\classes\ImageAltAi;
+use Bluebranch\BilderAlt\classes\BilderAlt;
 use Contao\Config;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-
-include __DIR__ . '/../config/constants.php';
+use Bluebranch\BilderAlt\config\Constants;
 
 class UploadListener
 {
@@ -20,17 +19,17 @@ class UploadListener
 
     public function __invoke(array $files)
     {
-        if (!Config::get('imageAltAiAutoGenerate')) {
+        if (!Config::get('bilderAltAutoGenerate')) {
             return;
         }
 
-        $apiKey = Config::get('imageAltAiApiKey');
+        $apiKey = Config::get('bilderAltApiKey');
         if (empty($apiKey)) {
             echo '<p class="tl_error">[Image Alt AI] Fehlender API Key</p>';
         }
 
-        $imageAltAi = new ImageAltAi($this->httpClient);
-        $languages = $imageAltAi->getAvailableLanguages();
+        $bilderAlt = new BilderAlt($this->httpClient);
+        $languages = $bilderAlt->getAvailableLanguages();
 
         $contextUrl = '';
         if (isset($_SERVER['HTTP_HOST'])) {
@@ -48,12 +47,12 @@ class UploadListener
             }
 
             $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
-            $supportedExtensions = ALLOWED_EXTENSIONS;
+            $supportedExtensions = Constants::ALLOWED_EXTENSIONS;
             if (!in_array($extension, $supportedExtensions, true)) {
                 continue;
             }
 
-            $absolutePath = $imageAltAi->getAbsolutePathFromRelative($filePath);
+            $absolutePath = $bilderAlt->getAbsolutePathFromRelative($filePath);
             if (!$absolutePath || !file_exists($absolutePath)) {
                 continue;
             }
@@ -67,7 +66,7 @@ class UploadListener
                     continue;
                 }
 
-                $response = $imageAltAi->sendToExternalApi($imageContent, $filePath, $apiKey, $language, '', $contextUrl);
+                $response = $bilderAlt->sendToExternalApi($imageContent, $filePath, $apiKey, $language, '', $contextUrl);
 
                 if (isset($response['success']) && $response['success'] === false) {
                     $errorResponses[] = $response;

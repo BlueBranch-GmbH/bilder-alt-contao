@@ -1,5 +1,5 @@
 {
-  "name": "bluebranch/image-alt-ai",
+  "name": "bluebranch/bilder-alt",
   "description": "Automatische Generierung von Alt-Texten für Bilder in Contao. Besuchen Sie www.bilder-alt.de.",
   "type": "contao-bundle",
   "license": "MIT",
@@ -17,10 +17,10 @@
   },
   "autoload": {
     "psr-4": {
-      "Bluebranch\\ImageAltAi\\": "src/"
+      "Bluebranch\\BilderAlt\\": "src/"
     }
   },
   "extra": {
-    "contao-manager-plugin": "Bluebranch\\ImageAltAi\\ContaoManager\\Plugin"
+    "contao-manager-plugin": "Bluebranch\\BilderAlt\\ContaoManager\\Plugin"
   }
 }

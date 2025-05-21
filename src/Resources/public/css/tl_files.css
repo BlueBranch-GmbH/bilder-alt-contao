@@ -1,18 +1,18 @@
-.image_alt_ai_button {
+.bilder_alt_button {
 
 }
 
-.image_alt_ai_button.loading img {
+.bilder_alt_button.loading img {
     display: none;
 }
 
-.image_alt_ai_button .loading {
+.bilder_alt_button .loading {
     display: inline-block;
     position: relative;
     width: 16px;
 }
 
-.image_alt_ai_button .loading:before {
+.bilder_alt_button .loading:before {
     content: "";
     position: absolute;
     left: 0;

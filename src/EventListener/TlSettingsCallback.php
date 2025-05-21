@@ -1,8 +1,8 @@
 <?php
 
-namespace Bluebranch\ImageAltAi\EventListener;
+namespace Bluebranch\BilderAlt\EventListener;
 
-use Bluebranch\ImageAltAi\classes\ImageAltAi;
+use Bluebranch\BilderAlt\classes\BilderAlt;
 use Contao\Config;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
@@ -17,15 +17,15 @@ class TlSettingsCallback
 
     public function loadCredits($value)
     {
-        $apiKey = Config::get('imageAltAiApiKey');
+        $apiKey = Config::get('bilderAltApiKey');
 
         if (empty($apiKey)) {
             return 'Bitte API-Key eintragen';
         }
 
         try {
-            $imageAltAi = new ImageAltAi($this->httpClient);
-            $response = $imageAltAi->getCreditsBalance($apiKey);
+            $bilderAlt = new BilderAlt($this->httpClient);
+            $response = $bilderAlt->getCreditsBalance($apiKey);
 
             if ($response['success'] && isset($response['credits'])) {
                 return $response['credits'];

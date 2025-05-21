@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Bluebranch\ImageAltAi\ContaoManager;
+namespace Bluebranch\BilderAlt\ContaoManager;
 
-use Bluebranch\ImageAltAi\ImageAltAiBundle;
+use Bluebranch\BilderAlt\BilderAltBundle;
 use Contao\CoreBundle\ContaoCoreBundle;
 use Contao\ManagerPlugin\Bundle\BundlePluginInterface;
 use Contao\ManagerPlugin\Bundle\Config\BundleConfig;
@@ -18,7 +18,7 @@ class Plugin implements BundlePluginInterface, RoutingPluginInterface
     public function getBundles(ParserInterface $parser): array
     {
         return [
-            BundleConfig::create(ImageAltAiBundle::class)
+            BundleConfig::create(BilderAltBundle::class)
                 ->setLoadAfter([ContaoCoreBundle::class])
         ];
     }

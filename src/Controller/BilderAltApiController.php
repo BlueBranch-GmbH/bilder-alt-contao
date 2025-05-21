@@ -1,8 +1,9 @@
 <?php
 
-namespace Bluebranch\ImageAltAi\Controller;
+namespace Bluebranch\BilderAlt\Controller;
 
-use Bluebranch\ImageAltAi\classes\ImageAltAi;
+use Bluebranch\BilderAlt\classes\BilderAlt;
+use Bluebranch\BilderAlt\config\Constants;
 use Contao\Config;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\File;
@@ -12,35 +13,33 @@ use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route as Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-include __DIR__ . '/../config/constants.php';
-
 /**
- * @Route("/contao/image-alt-ai/api/v1", defaults={"_scope" = "backend", "_token_check" = false})
+ * @Route("/contao/bilder-alt/api/v1", defaults={"_scope" = "backend", "_token_check" = false})
  */
-class ImageAltAiApiController extends AbstractController
+class BilderAltApiController extends AbstractController
 {
-    private ImageAltAi $imageAltAi;
+    private BilderAlt $bilderAlt;
 
     public function __construct(HttpClientInterface $httpClient)
     {
-        $this->imageAltAi = new ImageAltAi($httpClient);
+        $this->bilderAlt = new BilderAlt($httpClient);
     }
 
     /**
      * Ruft den aktuellen Stand der Credits von der externen API ab.
      *
-     * @Route("/credits", name="image_alt_ai_credits", methods={"GET"})
+     * @Route("/credits", name="bilder_alt_credits", methods={"GET"})
      */
     public function getCredits(): JsonResponse
     {
-        $apiKey = Config::get('imageAltAiApiKey');
+        $apiKey = Config::get('bilderAltApiKey');
 
         if (empty($apiKey)) {
             return new JsonResponse(['success' => false, 'message' => 'Kein API-Key konfiguriert'], Response::HTTP_BAD_REQUEST);
         }
 
         try {
-            $response = $this->imageAltAi->getCreditsBalance($apiKey);
+            $response = $this->bilderAlt->getCreditsBalance($apiKey);
 
             return new JsonResponse($response);
         } catch (\Exception $e) {
@@ -54,20 +53,20 @@ class ImageAltAiApiController extends AbstractController
     /**
      * Verarbeitet ein Bild anhand seines Pfades und leitet es an die externe API weiter.
      *
-     * @Route("/generate/path", name="image_alt_ai_generate_by_path", methods={"POST"})
+     * @Route("/generate/path", name="bilder_alt_generate_by_path", methods={"POST"})
      */
     public function generateByPath(Request $request): JsonResponse
     {
         $filePath = urldecode($request->request->get('path', ''));
         $keywords = $request->request->get('keywords', '');
         $contextUrl = $request->request->get('contextUrl', '');
-        $languages = $this->imageAltAi->getAvailableLanguages();
+        $languages = $this->bilderAlt->getAvailableLanguages();
 
         if (empty($languages)) {
             return new JsonResponse(['success' => false, 'message' => 'Keine Sprachen gefunden'], Response::HTTP_NOT_FOUND);
         }
 
-        $apiKey = Config::get('imageAltAiApiKey');
+        $apiKey = Config::get('bilderAltApiKey');
 
         if (empty($filePath)) {
             return new JsonResponse(['success' => false, 'message' => 'Kein Bildpfad angegeben'], Response::HTTP_BAD_REQUEST);
@@ -76,14 +75,14 @@ class ImageAltAiApiController extends AbstractController
         try {
             $extension = strtolower(pathinfo($filePath, PATHINFO_EXTENSION));
 
-            if (!in_array($extension, ALLOWED_EXTENSIONS, true)) {
+            if (!in_array($extension, Constants::ALLOWED_EXTENSIONS, true)) {
                 return new JsonResponse([
                     'success' => false,
                     'message' => '[Image Alt AI] Nicht unterstütztes Bildformat. Nur JPG, JPEG, PNG, GIF und WEBP werden unterstützt.'
                 ], Response::HTTP_BAD_REQUEST);
             }
 
-            $absolutePath = $this->imageAltAi->getAbsolutePathFromRelative($filePath);
+            $absolutePath = $this->bilderAlt->getAbsolutePathFromRelative($filePath);
 
             if (!$absolutePath || !file_exists($absolutePath)) {
                 return new JsonResponse(['success' => false, 'message' => '[Image Alt AI] Datei nicht gefunden: ' . $filePath], Response::HTTP_NOT_FOUND);
@@ -106,7 +105,7 @@ class ImageAltAiApiController extends AbstractController
                     return new JsonResponse(['success' => false, 'message' => '[Image Alt AI] Die angegebene Datei konnte nicht geladen werden'], Response::HTTP_NOT_FOUND);
                 }
 
-                $responses[] = $this->imageAltAi->sendToExternalApi($imageContent, $filePath, $apiKey, $language, $keywords, $contextUrl);
+                $responses[] = $this->bilderAlt->sendToExternalApi($imageContent, $filePath, $apiKey, $language, $keywords, $contextUrl);
 
                 fclose($imageContent);
             }

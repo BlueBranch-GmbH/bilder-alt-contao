@@ -13,7 +13,7 @@ async function generateImageTag($event, el) {
     formData.append('contextUrl', domain);
     
     try {
-        const response = await fetch('/contao/image-alt-ai/api/v1/generate/path', {
+        const response = await fetch('/contao/bilder-alt/api/v1/generate/path', {
             method: 'POST',
             headers: {
                 'X-Requested-With': 'XMLHttpRequest'
@@ -45,10 +45,10 @@ async function generateImageTag($event, el) {
 }
 
 function showNotification(message, type = 'info') {
-    let container = document.getElementById('image-alt-ai-notifications');
+    let container = document.getElementById('bilder-alt-notifications');
     if (!container) {
         container = document.createElement('div');
-        container.id = 'image-alt-ai-notifications';
+        container.id = 'bilder-alt-notifications';
         container.style.position = 'fixed';
         container.style.zIndex = '9999';
         container.style.top = '10px';

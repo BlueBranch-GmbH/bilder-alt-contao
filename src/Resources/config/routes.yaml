@@ -1,4 +1,4 @@
-image_alt_ai_api:
-    resource: ../../Controller/ImageAltAiApiController.php
+bilder_alt_api:
+    resource: ../../Controller/BilderAltApiController.php
     type: annotation
     prefix: /

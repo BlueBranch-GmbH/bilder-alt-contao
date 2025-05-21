@@ -1,11 +1,11 @@
 <?php
 
-namespace Bluebranch\ImageAltAi\classes;
+namespace Bluebranch\BilderAlt\classes;
 
 use Contao\System;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
-class ImageAltAi
+class BilderAlt
 {
     const IMAGE_ALT_AI_API_ENDPOINT = 'https://app.bilder-alt.de';
     private HttpClientInterface $httpClient;
