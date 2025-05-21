@@ -1,4 +1,3 @@
-# Image Alt AI API Routen
 image_alt_ai_api:
     resource: ../../Controller/ImageAltAiApiController.php
     type: annotation

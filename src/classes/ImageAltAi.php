@@ -7,7 +7,7 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class ImageAltAi
 {
-    const string IMAGE_ALT_AI_API_ENDPOINT = 'https://api.image-alt-ai.bluebranch.de';
+    const IMAGE_ALT_AI_API_ENDPOINT = 'https://app.bilder-alt.de';
     private HttpClientInterface $httpClient;
 
     public function __construct(HttpClientInterface $httpClient)
