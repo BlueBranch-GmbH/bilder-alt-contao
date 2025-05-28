@@ -1,9 +1,10 @@
 {
   "name": "bluebranch/bilder-alt",
-  "description": "Automatische Generierung von Alt-Texten für Bilder in Contao. Besuchen Sie www.bilder-alt.de.",
+  "description": "KI Alt Texte erstellen lassen für Contao CMS",
+  "keywords": ["contao", "uploader", "ki", "ai", "alt", "bilder", "bfsg"],
   "type": "contao-bundle",
   "license": "MIT",
-  "version": "1.0.6",
+  "version": "1.0.7",
   "authors": [
     {
       "name": "Lukas M. Beck",
@@ -11,6 +12,10 @@
       "homepage": "https://www.bluebranch.de/"
     }
   ],
+  "support": {
+    "issues": "https://github.com/BlueBranch-GmbH/bilder-alt-contao/issues",
+    "source": "https://github.com/BlueBranch-GmbH/bilder-alt-contao"
+  },
   "require": {
     "php": "^7.4 || ^8.0",
     "contao/core-bundle": "^4.13 || ^5.0"
