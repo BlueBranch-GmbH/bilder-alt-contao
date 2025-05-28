@@ -3,6 +3,8 @@
 namespace Bluebranch\BilderAlt\classes;
 
 use Contao\System;
+use Symfony\Component\Mime\Part\DataPart;
+use Symfony\Component\Mime\Part\Multipart\FormDataPart;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class BilderAlt
@@ -51,7 +53,7 @@ class BilderAlt
             ];
         }
     }
-    
+
     public function getAvailableLanguages(): array
     {
         $availableLanguages = [];
@@ -86,7 +88,7 @@ class BilderAlt
     }
 
     public function sendToExternalApi(
-        mixed  $image,
+        $image,
         string $imagePath,
         string $apiKey,
         string $language,
@@ -95,27 +97,29 @@ class BilderAlt
     ): array
     {
         try {
-            $formData = [
+            $formFields = [
                 'language' => $language,
-                'image' => $image,
+                'image' => DataPart::fromPath($imagePath),
             ];
 
             if (!empty($keywords)) {
-                $formData['keywords'] = $keywords;
+                $formFields['keywords'] = $keywords;
             }
 
             if (!empty($contextUrl)) {
-                $formData['contextUrl'] = $contextUrl;
+                $formFields['contextUrl'] = $contextUrl;
             }
+
+            $formData = new FormDataPart($formFields);
 
             $url = self::IMAGE_ALT_AI_API_ENDPOINT . '/api/v1/openai/upload-image';
 
+            $headers = $formData->getPreparedHeaders()->toArray();
+            $headers['x-api-key'] = $apiKey ?? '';
+
             $response = $this->httpClient->request('POST', $url, [
-                'headers' => [
-                    'Accept' => 'application/json',
-                    'x-api-key' => $apiKey ?? '',
-                ],
-                'body' => $formData,
+                'headers' => $headers,
+                'body' => $formData->bodyToIterable(),
             ]);
 
             $statusCode = $response->getStatusCode();

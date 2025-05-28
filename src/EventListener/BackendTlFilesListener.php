@@ -1,6 +1,6 @@
 <?php
 
-namespace Bluebranch\BilderAlt\Backend;
+namespace Bluebranch\BilderAlt\EventListener;
 
 use Contao\Backend;
 use Contao\CoreBundle\ServiceAnnotation\Hook;
@@ -10,8 +10,13 @@ use Contao\StringUtil;
 /**
  * @Hook("loadDataContainer")
  */
-class BackendAssetsListener extends Backend
+class BackendTlFilesListener extends Backend
 {
+    public function __construct()
+    {
+        parent::__construct();
+    }
+
     public function __invoke(string $table): void
     {
         if ($table !== 'tl_files') {

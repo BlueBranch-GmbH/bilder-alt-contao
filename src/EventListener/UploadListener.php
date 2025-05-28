@@ -25,7 +25,7 @@ class UploadListener
 
         $apiKey = Config::get('bilderAltApiKey');
         if (empty($apiKey)) {
-            echo '<p class="tl_error">[Image Alt AI] Fehlender API Key</p>';
+            echo '<p class="tl_error">[Bilder Alt] Fehlender API Key</p>';
         }
 
         $bilderAlt = new BilderAlt($this->httpClient);
@@ -76,7 +76,7 @@ class UploadListener
             }
 
             if (count($errorResponses) > 0) {
-                echo '<p class="tl_error">[Image Alt AI] Fehler bei der Verarbeitung: ' . ($errorResponses[0]['message'] ?? 'Unbekannter Fehler') . '</p>';
+                echo '<p class="tl_error">[Bilder Alt] Fehler bei der Verarbeitung: ' . ($errorResponses[0]['message'] ?? 'Unbekannter Fehler') . '</p>';
             }
         }
     }

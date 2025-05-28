@@ -12,9 +12,14 @@ services:
         arguments:
             - '@http_client'
         tags:
-            - { name: 'contao.hook', hook: 'postUpload', method: '__invoke' }
+            - { name: contao.hook, hook: postUpload, method: '__invoke' }
 
     Bluebranch\BilderAlt\EventListener\TlSettingsCallback:
         arguments:
             - '@http_client'
         public: true
+
+    Bluebranch\BilderAlt\EventListener\BackendTlFilesListener:
+        tags:
+            - { name: contao.hook, hook: loadDataContainer, method: '__invoke' }
+

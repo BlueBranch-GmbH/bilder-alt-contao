@@ -78,31 +78,30 @@ class BilderAltApiController extends AbstractController
             if (!in_array($extension, Constants::ALLOWED_EXTENSIONS, true)) {
                 return new JsonResponse([
                     'success' => false,
-                    'message' => '[Image Alt AI] Nicht unterstütztes Bildformat. Nur JPG, JPEG, PNG, GIF und WEBP werden unterstützt.'
+                    'message' => '[Bilder Alt] Nicht unterstütztes Bildformat. Nur JPG, JPEG, PNG, GIF und WEBP werden unterstützt.'
                 ], Response::HTTP_BAD_REQUEST);
             }
 
             $absolutePath = $this->bilderAlt->getAbsolutePathFromRelative($filePath);
 
             if (!$absolutePath || !file_exists($absolutePath)) {
-                return new JsonResponse(['success' => false, 'message' => '[Image Alt AI] Datei nicht gefunden: ' . $filePath], Response::HTTP_NOT_FOUND);
+                return new JsonResponse(['success' => false, 'message' => '[Bilder Alt] Datei nicht gefunden: ' . $filePath], Response::HTTP_NOT_FOUND);
             }
 
             $file = new File($absolutePath);
             $mimeType = $file->getMimeType();
 
             if (!str_starts_with($mimeType, 'image/')) {
-                return new JsonResponse(['success' => false, 'message' => '[Image Alt AI] Die angegebene Datei ist kein Bild'], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['success' => false, 'message' => '[Bilder Alt] Die angegebene Datei ist kein Bild'], Response::HTTP_BAD_REQUEST);
             }
 
             $responses = [];
-
 
             foreach ($languages as $language) {
                 $imageContent = fopen($absolutePath, 'r');
 
                 if ($imageContent === false) {
-                    return new JsonResponse(['success' => false, 'message' => '[Image Alt AI] Die angegebene Datei konnte nicht geladen werden'], Response::HTTP_NOT_FOUND);
+                    return new JsonResponse(['success' => false, 'message' => '[Bilder Alt] Die angegebene Datei konnte nicht geladen werden'], Response::HTTP_NOT_FOUND);
                 }
 
                 $responses[] = $this->bilderAlt->sendToExternalApi($imageContent, $filePath, $apiKey, $language, $keywords, $contextUrl);
@@ -121,7 +120,7 @@ class BilderAltApiController extends AbstractController
 
             return new JsonResponse($response);
         } catch (\Exception $e) {
-            return new JsonResponse(['success' => false, 'message' => '[Image Alt AI] Fehler bei der Verarbeitung: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['success' => false, 'message' => '[Bilder Alt] Fehler bei der Verarbeitung: ' . $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 }
