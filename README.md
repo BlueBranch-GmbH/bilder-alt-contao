@@ -11,8 +11,9 @@ Besuchen Sie [bilder-alt.de](https://bilder-alt.de/) und lassen Sie sich automat
 
 ### Steps
 
-1. Registrieren Sie sich unter [bilder-alt.de](https://bilder-alt.de/)
-2. Laden Sie Ihr Guthaben auf (wir empfehlen am Anfang 100 Credits = 100 Bilder)
+1. Installation der Erweiterung `$ composer require bluebranch/bilder-alt`
+1. Registrieren Sie sich unter [bilder-alt.de](https://app.bilder-alt.de/login)
+2. Laden Sie Ihre Credits auf (wir empfehlen am Anfang 100 Credits = 100 Bild-Anfragen)
 3. Erstellen Sie einen API Key und hinterlegen Sie diesen in den Contao Einstellungen
 
 ### Team
