@@ -63,13 +63,16 @@ class BilderAltApiController extends AbstractController
         $languages = $this->bilderAlt->getAvailableLanguages();
 
         if (empty($languages)) {
-            return new JsonResponse(['success' => false, 'message' => 'Keine Sprachen gefunden'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['success' => false, 'message' => '[Bilder Alt] Keine Sprachen gefunden'], Response::HTTP_NOT_FOUND);
         }
 
         $apiKey = Config::get('bilderAltApiKey');
+        if (empty($apiKey)) {
+            return new JsonResponse(['success' => false, 'message' => '[Bilder Alt] Fehlender API Key'], Response::HTTP_UNAUTHORIZED);
+        }
 
         if (empty($filePath)) {
-            return new JsonResponse(['success' => false, 'message' => 'Kein Bildpfad angegeben'], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['success' => false, 'message' => '[Bilder Alt] Kein Bildpfad angegeben'], Response::HTTP_BAD_REQUEST);
         }
 
         try {
