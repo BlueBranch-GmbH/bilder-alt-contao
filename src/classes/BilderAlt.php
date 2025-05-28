@@ -88,7 +88,6 @@ class BilderAlt
     }
 
     public function sendToExternalApi(
-        $image,
         string $imagePath,
         string $apiKey,
         string $language,

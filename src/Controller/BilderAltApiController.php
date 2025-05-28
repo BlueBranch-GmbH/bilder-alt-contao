@@ -98,15 +98,7 @@ class BilderAltApiController extends AbstractController
             $responses = [];
 
             foreach ($languages as $language) {
-                $imageContent = fopen($absolutePath, 'r');
-
-                if ($imageContent === false) {
-                    return new JsonResponse(['success' => false, 'message' => '[Bilder Alt] Die angegebene Datei konnte nicht geladen werden'], Response::HTTP_NOT_FOUND);
-                }
-
-                $responses[] = $this->bilderAlt->sendToExternalApi($imageContent, $filePath, $apiKey, $language, $keywords, $contextUrl);
-
-                fclose($imageContent);
+                $responses[] = $this->bilderAlt->sendToExternalApi($filePath, $apiKey, $language, $keywords, $contextUrl);
             }
 
             $errorResponses = array_filter($responses, function ($response) {

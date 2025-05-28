@@ -3,10 +3,10 @@
 namespace Bluebranch\BilderAlt\EventListener;
 
 use Bluebranch\BilderAlt\classes\BilderAlt;
+use Bluebranch\BilderAlt\config\Constants;
 use Contao\Config;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
-use Bluebranch\BilderAlt\config\Constants;
 
 class UploadListener
 {
@@ -60,19 +60,11 @@ class UploadListener
             $errorResponses = [];
 
             foreach ($languages as $language) {
-                $imageContent = fopen($absolutePath, 'r');
-
-                if ($imageContent === false) {
-                    continue;
-                }
-
-                $response = $bilderAlt->sendToExternalApi($imageContent, $filePath, $apiKey, $language, '', $contextUrl);
+                $response = $bilderAlt->sendToExternalApi($filePath, $apiKey, $language, '', $contextUrl);
 
                 if (isset($response['success']) && $response['success'] === false) {
                     $errorResponses[] = $response;
                 }
-
-                fclose($imageContent);
             }
 
             if (count($errorResponses) > 0) {
