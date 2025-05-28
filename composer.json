@@ -3,7 +3,7 @@
   "description": "Automatische Generierung von Alt-Texten für Bilder in Contao. Besuchen Sie www.bilder-alt.de.",
   "type": "contao-bundle",
   "license": "MIT",
-  "version": "1.0.4",
+  "version": "1.0.5",
   "authors": [
     {
       "name": "Lukas M. Beck",
