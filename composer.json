@@ -4,7 +4,7 @@
   "keywords": ["contao", "uploader", "ki", "ai", "alt", "bilder", "bfsg"],
   "type": "contao-bundle",
   "license": "MIT",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "authors": [
     {
       "name": "Lukas M. Beck",
