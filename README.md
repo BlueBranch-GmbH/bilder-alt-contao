@@ -1,22 +1,33 @@
 # Bilder-Alt.de
 
-[Contao](https://contao.org/) Plugin für das automatische Erstellen von Bilder-Alt-Tags in Contao.
-Besuchen Sie [bilder-alt.de](https://bilder-alt.de/) und lassen Sie sich automatisch nach dem Upload von Bildern
-"Alt-Texte" generieren oder manuell für bereits existierende Bilder.
+Erstelle automatisch barrierefreie und suchmaschinenfreundliche Alt-Texte direkt beim Bildupload in Contao – mit Hilfe von KI und optionalen SEO-Keywords.
+Unsere Erweiterung für das Contao CMS spart Zeit, verbessert deine Bildbeschreibungen und lässt sich nahtlos in deinen bestehenden Workflow integrieren.
 
-### Features
+## So funktioniert die Contao-Integration
 
-1. Automatisches Erstellen von Alt-Texten direkt nach dem Upload
-2. Manuelles Erstellen von Alt-Texten vorhandener Bilder
+Die Erweiterung ist im offiziellen Contao Extension Repository verfügbar.
+Nach der Installation brauchst du nur einen kostenlosen API-Schlüssel von SEO Alt Text Generator – und kannst direkt loslegen:
 
-### Steps
+1. Installation der Erweiterung `$ composer require bluebranch/bilder-alt` oder über den [Contao Manager](https://extensions.contao.org/?q=bild&pages=1&p=bluebranch/bilder-alt)
+2. Sichere Dir 25 Credits und registriere Dich auf [app.bilder-alt.de](https://app.bilder-alt.de/login)
+3. API-Key erstellen und in den Contao Einstellungen hinterlegen
 
-1. Installation der Erweiterung `$ composer require bluebranch/bilder-alt`
-1. Registrieren Sie sich unter [bilder-alt.de](https://app.bilder-alt.de/login)
-2. Laden Sie Ihre Credits auf (wir empfehlen am Anfang 100 Credits = 100 Bild-Anfragen)
-3. Erstellen Sie einen API Key und hinterlegen Sie diesen in den Contao Einstellungen
+Fertig!
 
-### Team
+## Alt-Texte automatisch beim Bildupload generieren
+
+Mit der offiziellen Contao-Erweiterung von SEO Alt Text Generator wird jeder Bild-Upload effizienter.
+Sobald ein neues Bild in die Mediathek geladen wird, erstellt die KI automatisch einen passenden Alt-Text – in natürlicher Sprache und optional mit deinem Wunsch-Keyword.
+
+## Vorteile für Redakteur:innen und Entwickler
+
+- Zeit sparen: Keine händischen Alt-Texte mehr nötig
+- Barrierefreiheit verbessern: Automatisch formulierte, verständliche Beschreibungen
+- SEO unterstützen: Keywords fließen intelligent ein
+- Einfache Einbindung: Kein separates Tool – direkt im Contao Backend nutzbar
+- DSGVO-konform: Datenverarbeitung ausschließlich in Deutschland
+
+## Unser Team
 
 Vielen Dank für die Unterstützung und das Benutzen von bilder-alt.de. 
 
