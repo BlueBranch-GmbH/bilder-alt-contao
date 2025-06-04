@@ -58,7 +58,6 @@ class BilderAltApiController extends AbstractController
     public function generateByPath(Request $request): JsonResponse
     {
         $filePath = urldecode($request->request->get('path', ''));
-        $keywords = $request->request->get('keywords', '');
         $contextUrl = $request->request->get('contextUrl', '');
         $languages = $this->bilderAlt->getAvailableLanguages();
 
@@ -69,6 +68,11 @@ class BilderAltApiController extends AbstractController
         $apiKey = Config::get('bilderAltApiKey');
         if (empty($apiKey)) {
             return new JsonResponse(['success' => false, 'message' => '[Bilder Alt] Fehlender API Key'], Response::HTTP_UNAUTHORIZED);
+        }
+
+        $keywords = Config::get('bilderAltKeywords');
+        if (empty($keywords)) {
+            $keywords = '';
         }
 
         if (empty($filePath)) {

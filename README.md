@@ -1,4 +1,4 @@
-# Bilder-Alt.de
+# SEO Alt Text Generator - Bilder-Alt.de 
 
 Erstelle automatisch barrierefreie und suchmaschinenfreundliche Alt-Texte direkt beim Bildupload in Contao – mit Hilfe von KI und optionalen SEO-Keywords.
 Unsere Erweiterung für das Contao CMS spart Zeit, verbessert deine Bildbeschreibungen und lässt sich nahtlos in deinen bestehenden Workflow integrieren.

@@ -28,6 +28,11 @@ class UploadListener
             echo '<p class="tl_error">[Bilder Alt] Fehlender API Key</p>';
         }
 
+        $keywords = Config::get('bilderAltKeywords');
+        if (empty($keywords)) {
+            $keywords = '';
+        }
+
         $bilderAlt = new BilderAlt($this->httpClient);
         $languages = $bilderAlt->getAvailableLanguages();
 
@@ -60,7 +65,7 @@ class UploadListener
             $errorResponses = [];
 
             foreach ($languages as $language) {
-                $response = $bilderAlt->sendToExternalApi($filePath, $apiKey, $language, '', $contextUrl);
+                $response = $bilderAlt->sendToExternalApi($filePath, $apiKey, $language, $keywords, $contextUrl);
 
                 if (isset($response['success']) && $response['success'] === false) {
                     $errorResponses[] = $response;
