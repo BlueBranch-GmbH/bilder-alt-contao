@@ -1,6 +1,6 @@
 {
   "name": "bluebranch/bilder-alt",
-  "description": "KI Alt Texte erstellen lassen für Contao CMS",
+  "description": "Erstelle automatisch barrierefreie und suchmaschinenfreundliche Alt-Texte direkt beim Bildupload in Contao – mit Hilfe von KI und optionalen SEO-Keywords. Unsere Erweiterung für das Contao CMS spart Zeit, verbessert deine Bildbeschreibungen und lässt sich nahtlos in deinen bestehenden Workflow integrieren.",
   "keywords": ["contao", "uploader", "ki", "ai", "alt", "bilder", "bfsg"],
   "type": "contao-bundle",
   "license": "MIT",
