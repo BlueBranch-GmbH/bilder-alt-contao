@@ -1,6 +1,6 @@
 {
   "name": "bluebranch/bilder-alt",
-  "description": "Erstelle automatisch barrierefreie und suchmaschinenfreundliche Alt-Texte direkt beim Bildupload in Contao – mit Hilfe von KI und optionalen SEO-Keywords. Unsere Erweiterung für das Contao CMS spart Zeit, verbessert deine Bildbeschreibungen und lässt sich nahtlos in deinen bestehenden Workflow integrieren.",
+  "description": "Automatically create accessible and SEO-friendly alt texts directly when uploading images in Contao – powered by AI and optional SEO keywords. Our extension for the Contao CMS saves time, improves your image descriptions, and integrates into your existing workflow.",
   "keywords": ["contao", "uploader", "ki", "ai", "alt", "bilder", "bfsg"],
   "type": "contao-bundle",
   "license": "MIT",
