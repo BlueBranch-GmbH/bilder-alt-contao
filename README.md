@@ -34,3 +34,9 @@ Vielen Dank für die Unterstützung und das Benutzen von bilder-alt.de.
 Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 <3
+
+## Changes
+
+### 1.2.0 - 2025-06-17
+- Multi File Select ist nun möglich + Ordnerwahl
+- Dateiname und bestehende Alt-Beschreibung werden ebenfalls an die API geschickt
