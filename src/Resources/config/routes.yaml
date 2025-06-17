@@ -2,3 +2,9 @@ bilder_alt_api:
     resource: ../../Controller/BilderAltApiController.php
     type: annotation
     prefix: /
+
+bilder_alt_controller:
+  resource: ../../Controller/BilderAltBatchController.php
+  type: annotation
+  prefix: /
+  

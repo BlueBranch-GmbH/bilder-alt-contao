@@ -1,0 +1,23 @@
+{% extends "@Contao/be_main" %}
+
+{% block title %}
+    <h1>Title</h1>
+{% endblock %}
+
+{% block main_content %}
+    <div class="header batch-header">
+        <a href="javascript:history.back()" class="header_back" title="Zurück">Zurück</a>
+        <div class="credits">Credits: {{ credits }}</div>
+    </div>
+
+    <div class="batch-container">
+        {% if imageFiles|length <= 0 %}
+            <p>Keine Bilder ausgewählt</p>
+
+        {% endif %}
+    </div>
+
+    <div class="footer batch-footer">
+        <a href="javascript:history.back()" class="header_back" title="Zurück">Zurück</a>
+    </div>
+{% endblock %}

@@ -1,0 +1,9 @@
+.batch-header {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+}
+
+.batch-container {
+    padding: 2rem;
+}
