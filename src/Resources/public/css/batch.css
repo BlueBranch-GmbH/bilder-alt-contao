@@ -3,7 +3,98 @@
     align-items: center;
     gap: 2rem;
 }
+.batch-header,
+.batch-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding: 10px 0;
+}
 
+.batch-container {
+    margin: 20px 0;
+}
+
+.batch-controls {
+    margin-bottom: 20px;
+}
+
+.batch-progress {
+    margin: 20px 0;
+}
+
+.batch-progress-bar-container {
+    width: 100%;
+    height: 20px;
+    background-color: #eee;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.batch-progress-bar {
+    height: 100%;
+    background-color: #8ab858;
+    width: 0;
+    transition: width 0.3s ease;
+}
+
+.batch-progress-text {
+    margin-top: 5px;
+    text-align: center;
+}
+
+.batch-files-list {
+    margin-top: 20px;
+}
+
+.batch-files-list table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.batch-files-list th,
+.batch-files-list td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid #ddd;
+}
+
+.batch-files-list th {
+    background-color: #f2f2f2;
+}
+
+.batch-files-list .preview {
+    width: 90px;
+}
+
+.batch-files-list .status {
+    width: 150px;
+}
+
+.batch-files-list .status.processing {
+    color: #f39c12;
+}
+
+.batch-files-list .status.success {
+    color: #2ecc71;
+}
+
+.batch-files-list .status.error {
+    color: #e74c3c;
+}
+
+.credits {
+    font-weight: bold;
+    background-color: #f6f6f6;
+    padding: 5px 10px;
+    border-radius: 4px;
+    display: inline-block;
+}
+
+#credits-count {
+    transition: all 0.3s ease;
+}
 .batch-container {
     padding: 2rem;
 }

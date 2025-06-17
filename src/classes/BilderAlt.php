@@ -2,6 +2,11 @@
 
 namespace Bluebranch\BilderAlt\classes;
 
+use Contao\BackendUser;
+use Contao\Config;
+use Contao\FilesModel;
+use Contao\PageModel;
+use Contao\StringUtil;
 use Contao\System;
 use Symfony\Component\Mime\Part\DataPart;
 use Symfony\Component\Mime\Part\Multipart\FormDataPart;
@@ -9,8 +14,10 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class BilderAlt
 {
-    const IMAGE_ALT_AI_API_ENDPOINT = 'https://app.bilder-alt.de';
-    private HttpClientInterface $httpClient;
+    private const API_BASE_URL = 'https://app.bilder-alt.de';
+
+    /** @var HttpClientInterface */
+    private $httpClient;
 
     public function __construct(HttpClientInterface $httpClient)
     {
@@ -19,9 +26,9 @@ class BilderAlt
 
     public function getCreditsBalance(string $apiKey): array
     {
-        try {
-            $url = self::IMAGE_ALT_AI_API_ENDPOINT . '/api/v1/credits/balance';
+        $url = self::API_BASE_URL . '/api/v1/credits/balance';
 
+        try {
             $response = $this->httpClient->request('GET', $url, [
                 'headers' => [
                     'Accept' => 'application/json',
@@ -30,123 +37,93 @@ class BilderAlt
             ]);
 
             $statusCode = $response->getStatusCode();
-            $content = $response->getContent(false);
-            $jsonResponse = json_decode($content, true);
+            $json = json_decode($response->getContent(false), true);
 
-            if ($statusCode >= 200 && $statusCode < 300 && $jsonResponse && isset($jsonResponse['credits'])) {
-                return [
-                    'success' => true,
-                    'credits' => $jsonResponse['credits'],
-                    'statusCode' => $statusCode
-                ];
+            if ($statusCode >= 200 && $statusCode < 300 && isset($json['credits'])) {
+                return ['success' => true, 'credits' => $json['credits'], 'statusCode' => $statusCode];
             }
 
             return [
                 'success' => false,
-                'message' => $jsonResponse['message'] ?? 'Unbekannter Fehler bei der Abfrage der Credits',
+                'message' => $json['message'] ?? 'Unbekannter Fehler bei der Abfrage der Credits',
                 'statusCode' => $statusCode,
             ];
         } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => 'Exception: ' . $e->getMessage(),
-            ];
+            return ['success' => false, 'message' => 'Exception: ' . $e->getMessage()];
         }
     }
 
     public function getAvailableLanguages(): array
     {
-        $availableLanguages = [];
+        $languages = [];
 
-        if (class_exists('\\Contao\\PageModel')) {
-            $rootPages = \Contao\PageModel::findByType('root');
-
-            if ($rootPages !== null) {
-                while ($rootPages->next()) {
-                    // Wenn die Sprache definiert ist
-                    if ($rootPages->language) {
-                        $availableLanguages[$rootPages->language] = $this->getLanguage($rootPages->language);
+        if (class_exists(PageModel::class)) {
+            $roots = PageModel::findByType('root');
+            if ($roots !== null) {
+                while ($roots->next()) {
+                    if (!empty($roots->language)) {
+                        $languages[$roots->language] = $this->getLanguage($roots->language);
                     }
                 }
             }
         }
 
-        if (empty($availableLanguages)) {
-            $user = \Contao\BackendUser::getInstance();
-            $availableLanguages[$user->language] = $this->getLanguage($user->language);
+        if (empty($languages)) {
+            $user = BackendUser::getInstance();
+            $languages[$user->language] = $this->getLanguage($user->language);
         }
 
-        return $availableLanguages;
+        return $languages;
     }
 
     public function getAbsolutePathFromRelative(string $path): ?string
     {
         $path = ltrim($path, '/');
-        $container = System::getContainer();
-        $rootDir = $container->getParameter('kernel.project_dir');
+        $rootDir = System::getContainer()->getParameter('kernel.project_dir');
         return $rootDir . '/' . $path;
     }
 
-    public function sendToExternalApi(
-        string $imagePath,
-        string $apiKey,
-        string $language,
-        string $keywords,
-        string $contextUrl
-    ): array
+    public function sendToExternalApi(string $imagePath, string $apiKey, string $language, string $keywords, string $contextUrl): array
     {
         try {
-            $formFields = [
+            $fields = [
                 'language' => $language,
                 'image' => DataPart::fromPath($imagePath),
             ];
 
             if (!empty($keywords)) {
-                $formFields['keywords'] = $keywords;
+                $fields['keywords'] = $keywords;
             }
 
             if (!empty($contextUrl)) {
-                $formFields['contextUrl'] = $contextUrl;
+                $fields['contextUrl'] = $contextUrl;
             }
 
-            $formData = new FormDataPart($formFields);
+            $form = new FormDataPart($fields);
+            $url = self::API_BASE_URL . '/api/v1/openai/upload-image';
 
-            $url = self::IMAGE_ALT_AI_API_ENDPOINT . '/api/v1/openai/upload-image';
-
-            $headers = $formData->getPreparedHeaders()->toArray();
-            $headers['x-api-key'] = $apiKey ?? '';
+            $headers = $form->getPreparedHeaders()->toArray();
+            $headers['x-api-key'] = $apiKey;
 
             $response = $this->httpClient->request('POST', $url, [
                 'headers' => $headers,
-                'body' => $formData->bodyToIterable(),
+                'body' => $form->bodyToIterable(),
             ]);
 
             $statusCode = $response->getStatusCode();
+            $json = json_decode($response->getContent(false), true);
 
-            $content = $response->getContent(false);
-
-            $jsonResponse = json_decode($content, true);
-
-            if ($statusCode >= 200 && $statusCode < 300 && $jsonResponse && !empty($jsonResponse['altTag'])) {
-                $languageIsoCode = $this->getIsoCodeFromLanguage($language);
-                $this->updateImageAltText($imagePath, $jsonResponse['altTag'], $languageIsoCode);
-                return array_merge(['success' => true, 'statusCode' => $statusCode], $jsonResponse);
+            if ($statusCode >= 200 && $statusCode < 300 && !empty($json['altTag'])) {
+                $isoCode = $this->getIsoCodeFromLanguage($language);
+                $this->updateImageAltText($imagePath, $json['altTag'], $isoCode);
+                return array_merge(['success' => true, 'statusCode' => $statusCode], $json);
             }
 
-            if ($jsonResponse) {
-                return array_merge(['success' => false, 'statusCode' => $statusCode], $jsonResponse);
-            }
-
-            return [
-                'success' => false,
-                'message' => 'Error: ' . ($jsonResponse['message'] ?? 'Unbekannter Fehler'),
-                'statusCode' => $statusCode,
-            ];
+            return array_merge(['success' => false, 'statusCode' => $statusCode], $json ?: [
+                'message' => 'Unbekannter Fehler',
+            ]);
         } catch (\Exception $e) {
-            return [
-                'success' => false,
-                'message' => 'Exception: ' . $e->getMessage(),
-            ];
+            return ['success' => false, 'message' => 'Exception: ' . $e->getMessage()];
         }
     }
 
@@ -156,25 +133,27 @@ class BilderAlt
             return;
         }
 
-        // UUID prüfen
-        if (preg_match('/^[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}$/', $path)) {
-            $fileModel = \Contao\FilesModel::findByUuid($path);
-        } else {
-            // Für reguläre Pfade
-            $fileModel = \Contao\FilesModel::findByPath($path);
-        }
-
+        $fileModel = $this->getFileModelFromPathOrUuid($path);
         if ($fileModel === null) {
             return;
         }
 
-        $fileModel->meta = $this->updateMetaInformation($fileModel->meta, $altText, $language);
+        $fileModel->meta = $this->updateMetaInformation($fileModel->meta, $altText, $language ?? 'de');
         $fileModel->save();
+    }
+
+    private function getFileModelFromPathOrUuid(string $path): ?FilesModel
+    {
+        if (preg_match('/^[a-f0-9\-]{36}$/', $path)) {
+            return FilesModel::findByUuid($path);
+        }
+
+        return FilesModel::findByPath($path);
     }
 
     public function updateMetaInformation($metaData, string $altText, ?string $language = 'de'): string
     {
-        $meta = \Contao\StringUtil::deserialize($metaData, true);
+        $meta = StringUtil::deserialize($metaData, true);
 
         if (empty($meta)) {
             $meta = [$language => ['title' => '', 'alt' => $altText]];
@@ -191,7 +170,7 @@ class BilderAlt
 
     protected function getIsoCodeFromLanguage(string $language): string
     {
-        $languageToIsoMapping = array_flip([
+        $mapping = array_flip([
             'en' => 'english',
             'de' => 'german',
             'fr' => 'french',
@@ -222,53 +201,56 @@ class BilderAlt
             'id' => 'indonesian',
         ]);
 
-        return $languageToIsoMapping[$language] ?? 'de';
+        return isset($mapping[$language]) ? $mapping[$language] : 'de';
     }
 
     protected function getLanguage(string $language): string
     {
-        $languageMapping = [
-            'en' => 'english',
-            'en-US' => 'english',
-            'en-GB' => 'english',
-            'de' => 'german',
-            'de-DE' => 'german',
-            'fr' => 'french',
-            'es' => 'spanish',
-            'it' => 'italian',
-            'nl' => 'nederlands',
-            'pt' => 'portuguese',
-            'pt-BR' => 'portuguese',
-            'ru' => 'russian',
-            'zh' => 'chinese',
-            'zh-CN' => 'chinese',
-            'zh-TW' => 'chinese',
-            'ja' => 'japanese',
-            'ko' => 'korean',
-            'ar' => 'arabic',
-            'hi' => 'hindi',
-            'pl' => 'polish',
-            'tr' => 'turkish',
-            'sv' => 'swedish',
-            'da' => 'danish',
-            'no' => 'norwegian',
-            'nb' => 'norwegian',
-            'nn' => 'norwegian',
-            'fi' => 'finnish',
-            'cs' => 'czech',
-            'hu' => 'hungarian',
-            'el' => 'greek',
-            'bg' => 'bulgarian',
-            'ro' => 'romanian',
-            'uk' => 'ukrainian',
-            'th' => 'thai',
-            'vi' => 'vietnamese',
-            'id' => 'indonesian',
-            'in' => 'bahasa indonesia',
-            'ms' => 'malay',
-            'ms-BN' => 'bahasa melayu',
-            'ms-MY' => 'bahasa melayu',
+        $map = [
+            'en' => 'english', 'en-US' => 'english', 'en-GB' => 'english',
+            'de' => 'german', 'de-DE' => 'german',
+            'fr' => 'french', 'es' => 'spanish', 'it' => 'italian',
+            'nl' => 'nederlands', 'pt' => 'portuguese', 'pt-BR' => 'portuguese',
+            'ru' => 'russian', 'zh' => 'chinese', 'zh-CN' => 'chinese', 'zh-TW' => 'chinese',
+            'ja' => 'japanese', 'ko' => 'korean', 'ar' => 'arabic', 'hi' => 'hindi',
+            'pl' => 'polish', 'tr' => 'turkish', 'sv' => 'swedish', 'da' => 'danish',
+            'no' => 'norwegian', 'nb' => 'norwegian', 'nn' => 'norwegian',
+            'fi' => 'finnish', 'cs' => 'czech', 'hu' => 'hungarian', 'el' => 'greek',
+            'bg' => 'bulgarian', 'ro' => 'romanian', 'uk' => 'ukrainian',
+            'th' => 'thai', 'vi' => 'vietnamese', 'id' => 'indonesian',
+            'in' => 'bahasa indonesia', 'ms' => 'malay', 'ms-BN' => 'bahasa melayu', 'ms-MY' => 'bahasa melayu',
         ];
-        return $languageMapping[$language] ?? 'english';
+
+        return isset($map[$language]) ? $map[$language] : 'english';
+    }
+
+    public function getKeywordsFromFile(string $filePath): array
+    {
+        $keywords = explode(',', Config::get('bilderAltKeywords') ?? '');
+        $fileModel = FilesModel::findByPath($filePath);
+
+        if ($fileModel) {
+            if (!empty($fileModel->name)) {
+                array_unshift($keywords, $fileModel->name);
+            }
+
+            $alt = $this->getAltTextFromMeta($fileModel->meta);
+            if ($alt) {
+                array_unshift($keywords, $alt);
+            }
+        }
+
+        return array_filter(array_map('trim', $keywords));
+    }
+
+    private function getAltTextFromMeta($meta): ?string
+    {
+        $metaArray = StringUtil::deserialize($meta, true);
+        if (empty($metaArray)) {
+            return null;
+        }
+
+        $firstLang = array_key_first($metaArray);
+        return $metaArray[$firstLang]['alt'] ?? null;
     }
 }

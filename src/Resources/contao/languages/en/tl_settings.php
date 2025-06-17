@@ -5,3 +5,6 @@ $GLOBALS['TL_LANG']['tl_settings']['bilderAltApiKey'] = ['API Key', 'Enter your 
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltAutoGenerate'] = ['Automatically generate alt tags', 'If enabled, alt tags will be generated automatically after upload.'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltKeywords'] = ['Keywords', 'Enter a comma-separated list of keywords to be considered for SEO.'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltCredits'] = ['Available credits', 'Top up your credits: https://app.bilder-alt.de/'];
+
+// Error
+$GLOBALS['TL_LANG']['tl_settings']['bilderAltNoCredits'] = 'No credits available – Get 25 free credits at https://app.bilder-alt.de/';

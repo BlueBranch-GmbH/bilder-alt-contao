@@ -1,17 +1,15 @@
 async function generateImageTag($event, el) {
     $event?.preventDefault();
 
-    const path = el.getAttribute('--data-file-path');
+    const path = el.getAttribute('data-file-path');
 
     el.innerHTML = el.innerHTML + '<span class="loading"></span>';
     el.classList.add('loading');
 
     const formData = new FormData();
     formData.append('path', path);
+    formData.append('contextUrl', window.location.hostname);
 
-    const domain = window.location.hostname;
-    formData.append('contextUrl', domain);
-    
     try {
         const response = await fetch('/contao/bilder-alt/api/v1/generate/path', {
             method: 'POST',
@@ -20,7 +18,7 @@ async function generateImageTag($event, el) {
             },
             body: formData
         });
-        
+
         const data = await response.json();
 
         if (data.success) {
@@ -56,16 +54,16 @@ function showNotification(message, type = 'info') {
         container.style.background = '#fff';
         document.body.appendChild(container);
     }
-    
+
     const notification = document.createElement('div');
     notification.className = `tl_${type === 'error' ? 'error' : (type === 'success' ? 'confirm' : 'info')}`;
     notification.style.padding = '10px 10px 10px 50px';
     notification.style.borderRadius = '3px';
     notification.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
     notification.innerHTML = message;
-    
+
     container.appendChild(notification);
-    
+
     setTimeout(() => {
         notification.style.transition = 'opacity 0.5s';
         notification.style.opacity = '0';

@@ -1,10 +1,13 @@
-document.addEventListener('DOMContentLoaded', function() {
-    const batchStartButton = document.getElementById('batch-start');
-    const batchStopButton = document.getElementById('batch-stop');
-    const progressContainer = document.getElementById('batch-progress-container');
-    const progressBar = document.getElementById('batch-progress-bar');
-    const progressText = document.getElementById('batch-progress-text');
-    const filesList = document.getElementById('batch-files-list');
+document.addEventListener('DOMContentLoaded', () => {
+    const $ = id => document.getElementById(id);
+
+    const batchStartButton = $('batch-start');
+    const batchStopButton = $('batch-stop');
+    const progressContainer = $('batch-progress-container');
+    const progressBar = $('batch-progress-bar');
+    const progressText = $('batch-progress-text');
+    const filesList = $('batch-files-list');
+    const creditsCount = $('credits-count');
 
     if (!batchStartButton || !filesList) return;
 
@@ -13,106 +16,111 @@ document.addEventListener('DOMContentLoaded', function() {
     let totalFiles = 0;
     let isProcessing = false;
     let shouldStop = false;
+    let currentCredits = parseInt(creditsCount.textContent, 10) || 0;
 
-    // Alle Dateien sammeln
     function collectFiles() {
-        filesQueue = [];
-        const fileItems = document.querySelectorAll('.file-item');
-
-        fileItems.forEach(item => {
-            const filePath = item.getAttribute('data-path');
-            if (filePath) {
-                filesQueue.push({
-                    element: item,
-                    path: filePath,
-                    processed: false
-                });
-            }
-        });
+        filesQueue = [...document.querySelectorAll('.file-item')]
+            .map(el => ({element: el, path: el.dataset.path, processed: false}))
+            .filter(file => !!file.path);
 
         totalFiles = filesQueue.length;
         return totalFiles > 0;
     }
 
-    // Fortschritt aktualisieren
     function updateProgress() {
-        const percentage = (processedCount / totalFiles) * 100;
-        progressBar.style.width = percentage + '%';
-        progressText.textContent = processedCount + '/' + totalFiles + ' verarbeitet';
+        const percent = (processedCount / totalFiles) * 100;
+        progressBar.style.width = `${percent}%`;
+        progressText.textContent = `${processedCount}/${totalFiles} verarbeitet`;
     }
 
-    // Datei verarbeiten
-    async function processFile(fileItem) {
-        if (shouldStop) return;
+    function updateCredits(used = 1) {
+        currentCredits = Math.max(0, currentCredits - used);
+        creditsCount.textContent = currentCredits;
 
-        const statusCell = fileItem.element.querySelector('.status');
-        statusCell.textContent = 'Wird verarbeitet...';
-        statusCell.className = 'status processing';
+        if (currentCredits <= 0) {
+            shouldStop = true;
+            showNotification('Keine Credits mehr verfügbar. Verarbeitung wird gestoppt.', 'error');
+            finishProcessing();
+            return false;
+        }
+        return true;
+    }
 
+    async function processApiRequest(fileItem) {
         const formData = new FormData();
         formData.append('path', fileItem.path);
         formData.append('contextUrl', window.location.hostname);
 
+        const res = await fetch('/contao/bilder-alt/api/v1/generate/path', {
+            method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}, body: formData
+        });
+
+        return await res.json();
+    }
+
+    function setStatus(fileItem, text, cssClass) {
+        const cell = fileItem.element.querySelector('.status');
+        if (!cell) return;
+        cell.textContent = text;
+        cell.className = `status ${cssClass}`;
+    }
+
+    async function processFilePair(file1, file2 = null) {
+        if (shouldStop) return;
+
+        [file1, file2].filter(Boolean).forEach(file => setStatus(file, 'Wird verarbeitet...', 'processing'));
+
+        if (!updateCredits(file2 ? 2 : 1)) return;
+
         try {
-            const response = await fetch('/contao/bilder-alt/api/v1/generate/path', {
-                method: 'POST',
-                headers: {
-                    'X-Requested-With': 'XMLHttpRequest'
-                },
-                body: formData
-            });
+            const result1 = await processApiRequest(file1);
+            handleResult(file1, result1);
 
-            const data = await response.json();
-
-            if (data.success) {
-                statusCell.textContent = 'Erfolgreich';
-                statusCell.className = 'status success';
-            } else {
-                let errorMessage = 'Fehler';
-                if (data?.data?.length) {
-                    errorMessage = data.data[0].message || 'Fehler';
-                } else if (data.message) {
-                    errorMessage = data.message;
-                }
-
-                statusCell.textContent = errorMessage;
-                statusCell.className = 'status error';
-                console.error('Fehler bei der Verarbeitung:', data);
+            if (file2 && !shouldStop) {
+                const result2 = await processApiRequest(file2);
+                handleResult(file2, result2);
             }
-        } catch (error) {
-            statusCell.textContent = 'Fehler: ' + error.message;
-            statusCell.className = 'status error';
-            console.error('Fehler beim API-Aufruf:', error);
+        } catch (err) {
+            console.error('Fehler bei der Batch-Verarbeitung:', err);
+            [file1, file2].filter(Boolean).forEach(file => {
+                setStatus(file, `Fehler: ${err.message || 'Unbekannter Fehler'}`, 'error');
+            });
         }
 
-        fileItem.processed = true;
-        processedCount++;
+        [file1, file2].filter(Boolean).forEach(file => {
+            file.processed = true;
+            processedCount++;
+        });
+
         updateProgress();
     }
 
-    // Dateien sequentiell verarbeiten
-    async function processQueue() {
-        if (shouldStop || processedCount >= totalFiles) {
-            finishProcessing();
-            return;
-        }
-
-        const nextFile = filesQueue.find(file => !file.processed);
-
-        if (nextFile) {
-            await processFile(nextFile);
-            setTimeout(processQueue, 500); // Kurze Pause zwischen den Anfragen
+    function handleResult(file, data) {
+        if (data?.success) {
+            setStatus(file, 'Erfolgreich', 'success');
         } else {
-            finishProcessing();
+            const msg = data?.data?.[0]?.message || data?.message || 'Fehler';
+            setStatus(file, msg, 'error');
+            console.error('Fehler bei der Verarbeitung:', data);
         }
     }
 
-    // Verarbeitung starten
-    function startProcessing() {
-        if (!collectFiles()) {
-            showNotification('Keine Dateien zum Verarbeiten gefunden', 'error');
-            return;
+    async function processQueue() {
+        if (shouldStop || processedCount >= totalFiles) return finishProcessing();
+
+        const remaining = filesQueue.filter(f => !f.processed);
+        if (!remaining.length) {
+            return finishProcessing();
         }
+
+        const [file1, file2] = remaining;
+        await processFilePair(file1, file2);
+        setTimeout(processQueue, 800);
+    }
+
+    function startProcessing() {
+        if (!collectFiles()) return showNotification('Keine Dateien gefunden', 'error');
+        if (currentCredits <= 0) return showNotification('Keine Credits verfügbar', 'error');
 
         shouldStop = false;
         isProcessing = true;
@@ -126,63 +134,52 @@ document.addEventListener('DOMContentLoaded', function() {
         processQueue();
     }
 
-    // Verarbeitung beenden
     function finishProcessing() {
         isProcessing = false;
         batchStartButton.style.display = 'inline-block';
         batchStopButton.style.display = 'none';
 
-        if (shouldStop) {
-            showNotification('Verarbeitung wurde abgebrochen', 'info');
-        } else if (processedCount === totalFiles) {
-            showNotification('Alle Dateien wurden verarbeitet', 'success');
-        }
+        const msg = shouldStop ? 'Verarbeitung wurde abgebrochen' : 'Alle Dateien wurden verarbeitet';
+
+        showNotification(msg, shouldStop ? 'info' : 'success');
     }
 
-    // Event-Listener für Buttons
     batchStartButton.addEventListener('click', startProcessing);
+    batchStopButton?.addEventListener('click', () => {
+        shouldStop = true;
+        showNotification('Verarbeitung wird angehalten...', 'info');
+    });
 
-    if (batchStopButton) {
-        batchStopButton.addEventListener('click', function() {
-            shouldStop = true;
-            showNotification('Verarbeitung wird angehalten...', 'info');
-        });
-    }
-
-    // Benachrichtigung anzeigen
+    // Notification-System
     function showNotification(message, type = 'info') {
-        let container = document.getElementById('bilder-alt-notifications');
+        let container = $('bilder-alt-notifications');
+
         if (!container) {
             container = document.createElement('div');
             container.id = 'bilder-alt-notifications';
-            container.style.position = 'fixed';
-            container.style.zIndex = '9999';
-            container.style.top = '10px';
-            container.style.right = '10px';
-            container.style.width = '300px';
+            Object.assign(container.style, {
+                position: 'fixed', zIndex: '9999', top: '10px', right: '10px', width: '300px'
+            });
             document.body.appendChild(container);
         }
 
-        const notification = document.createElement('div');
-        notification.className = `tl_${type === 'error' ? 'error' : (type === 'success' ? 'confirm' : 'info')}`;
-        notification.style.padding = '10px 10px 10px 50px';
-        notification.style.borderRadius = '3px';
-        notification.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-        notification.style.marginBottom = '10px';
-        notification.innerHTML = message;
-
-        container.appendChild(notification);
+        const div = document.createElement('div');
+        div.className = `tl_${type === 'error' ? 'error' : (type === 'success' ? 'confirm' : 'info')}`;
+        Object.assign(div.style, {
+            padding: '10px 10px 10px 50px',
+            borderRadius: '3px',
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+            marginBottom: '10px'
+        });
+        div.innerHTML = message;
+        container.appendChild(div);
 
         setTimeout(() => {
-            notification.style.transition = 'opacity 0.5s';
-            notification.style.opacity = '0';
-
+            div.style.transition = 'opacity 0.5s';
+            div.style.opacity = '0';
             setTimeout(() => {
-                container.removeChild(notification);
-
-                if (container.children.length === 0) {
-                    document.body.removeChild(container);
-                }
+                div.remove();
+                if (!container.children.length) container.remove();
             }, 500);
         }, 5000);
     }

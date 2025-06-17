@@ -1,19 +1,53 @@
 {% extends "@Contao/be_main" %}
 
 {% block title %}
-    <h1>Title</h1>
+    <h1>{{ headline|default('SEO Alt Text Generator') }}</h1>
 {% endblock %}
 
 {% block main_content %}
     <div class="header batch-header">
         <a href="javascript:history.back()" class="header_back" title="Zurück">Zurück</a>
-        <div class="credits">Credits: {{ credits }}</div>
+        <div id="credits-display" class="credits">Credits: <span id="credits-count">{{ credits }}</span></div>
     </div>
 
     <div class="batch-container">
         {% if imageFiles|length <= 0 %}
             <p>Keine Bilder ausgewählt</p>
+        {% else %}
+            <div class="batch-controls">
+                <button id="batch-start" class="tl_submit">Batch-Verarbeitung starten</button>
+                <button id="batch-stop" class="tl_submit" style="display:none;">Verarbeitung stoppen</button>
+            </div>
 
+            <div id="batch-progress-container" style="display:none;" class="batch-progress">
+                <div class="batch-progress-bar-container">
+                    <div id="batch-progress-bar" class="batch-progress-bar"></div>
+                </div>
+                <div id="batch-progress-text" class="batch-progress-text">0/{{ imageFiles|length }} verarbeitet</div>
+            </div>
+
+            <div id="batch-files-list" class="batch-files-list">
+                <table class="tl_listing">
+                    <thead>
+                    <tr>
+                        <th>Vorschau</th>
+                        <th>Dateiname</th>
+                        <th>Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for file in imageFiles %}
+                        <tr class="file-item" data-path="{{ file.path }}" data-uuid="{{ file.uuid }}">
+                            <td class="preview">
+                                {{ contao_figure(file.path, [100, 100, 'proportional']) }}
+                            </td>
+                            <td class="filename">{{ file.name }}</td>
+                            <td class="status">-</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
         {% endif %}
     </div>
 
