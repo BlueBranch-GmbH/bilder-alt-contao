@@ -1,4 +1,4 @@
-# SEO Alt Text Generator - Bilder-Alt.de 
+# SEO Alt Text Generator - Bilder-Alt.de (DE) 
 
 Erstelle automatisch barrierefreie und suchmaschinenfreundliche Alt-Texte direkt beim Bildupload in Contao – mit Hilfe von KI und optionalen SEO-Keywords.
 Unsere Erweiterung für das Contao CMS spart Zeit, verbessert deine Bildbeschreibungen und lässt sich nahtlos in deinen bestehenden Workflow integrieren.
@@ -14,6 +14,8 @@ Nach der Installation brauchst du nur einen kostenlosen API-Schlüssel von SEO A
 
 Fertig!
 
+Mehr Informationen unter https://www.bilder-alt.de/contao-erweiterung
+
 ## Alt-Texte automatisch beim Bildupload generieren
 
 Mit der offiziellen Contao-Erweiterung von SEO Alt Text Generator wird jeder Bild-Upload effizienter.
@@ -27,9 +29,27 @@ Sobald ein neues Bild in die Mediathek geladen wird, erstellt die KI automatisch
 - Einfache Einbindung: Kein separates Tool – direkt im Contao Backend nutzbar
 - DSGVO-konform: Datenverarbeitung ausschließlich in Deutschland
 
-## Unser Team
+# SEO Alt Text Generator - Bilder-Alt.de (EN)
 
-Vielen Dank für die Unterstützung und das Benutzen von bilder-alt.de. 
+Automatically create accessible and SEO-friendly alt texts during image upload in Contao – powered by AI and optional SEO keywords.  
+Our extension for the Contao CMS saves time, improves image descriptions, and integrates seamlessly into your existing workflow.
+
+## How the Contao Integration Works
+
+The extension is available in the official Contao Extension Repository.  
+After installation, all you need is a free API key from SEO Alt Text Generator – and you’re ready to go:
+
+1. Install the extension using `$ composer require bluebranch/bilder-alt` or via the [Contao Manager](https://extensions.contao.org/?q=bild&pages=1&p=bluebranch/bilder-alt)
+2. Register at [app.bilder-alt.de](https://app.bilder-alt.de/login) and claim your 25 free credits
+3. Generate your API key and enter it in the Contao settings
+
+That’s it!
+
+More information at: https://www.bilder-alt.de/contao-erweiterung
+
+## Vielen Dank
+
+Unser Team Dank für die Unterstützung und das Benutzen von dem SEO Alt Text Generator.
 
 Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
