@@ -48,7 +48,7 @@ class UploadListener
                 continue;
             }
 
-            $keywords = $bilderAlt->getKeywordsFromFile($filePath) ?? [];
+            $keywords = $bilderAlt->getKeywords($filePath);
             $errorResponses = [];
 
             foreach ($languages as $language) {

@@ -80,7 +80,7 @@ class BilderAltApiController extends AbstractController
         }
 
         try {
-            $keywords = $this->bilderAlt->getKeywordsFromFile($filePath) ?? [];
+            $keywords = $this->bilderAlt->getKeywords($filePath);
             $responses = [];
 
             foreach ($languages as $language) {

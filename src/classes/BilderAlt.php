@@ -224,18 +224,13 @@ class BilderAlt
         return isset($map[$language]) ? $map[$language] : 'english';
     }
 
-    public function getKeywordsFromFile(string $filePath): array
+    public function getKeywords(string $filePath): array
     {
         $keywords = explode(',', Config::get('bilderAltKeywords') ?? '');
         $fileModel = FilesModel::findByPath($filePath);
 
         if ($fileModel) {
-            if (!empty($fileModel->name)) {
-                array_unshift($keywords, $fileModel->name);
-            }
-
-            $alt = $this->getAltTextFromMeta($fileModel->meta);
-            if ($alt) {
+            if ($alt = $this->getAltTextFromMeta($fileModel->meta)) {
                 array_unshift($keywords, $alt);
             }
         }
