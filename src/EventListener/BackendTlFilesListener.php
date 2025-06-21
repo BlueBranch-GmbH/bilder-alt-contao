@@ -2,6 +2,7 @@
 
 namespace Bluebranch\BilderAlt\EventListener;
 
+use Bluebranch\BilderAlt\config\Constants;
 use Contao\Backend;
 use Contao\DataContainer;
 use Contao\Image;
@@ -11,12 +12,10 @@ use Contao\System;
 
 class BackendTlFilesListener extends Backend
 {
-    /** @var string[] Unterstützte Bildformate */
-    private const ALLOWED_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
 
     public function __construct()
     {
-        parent::__construct(); // wird benötigt, um z. B. `addToUrl` nutzen zu können
+        parent::__construct();
     }
 
     /**
@@ -58,9 +57,6 @@ class BackendTlFilesListener extends Backend
         }
     }
 
-    /**
-     * Einzelbild-Button rendern
-     */
     public static function renderButton(array $row, string $href, string $label, string $title, string $icon, string $attributes): string
     {
         if (empty($row['id'])) {
@@ -68,7 +64,7 @@ class BackendTlFilesListener extends Backend
         }
 
         $ext = strtolower(pathinfo($row['id'], PATHINFO_EXTENSION));
-        if (!in_array($ext, self::ALLOWED_EXTENSIONS, true)) {
+        if (!in_array($ext, Constants::ALLOWED_EXTENSIONS, true)) {
             return '';
         }
 
