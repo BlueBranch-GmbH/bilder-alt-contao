@@ -57,6 +57,9 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.3.0 - 2025-06-21
+- Support für svg, heic, heif, tif, tiff hinzugefügt
+
 ### 1.2.0 - 2025-06-17
 - Multi File Select ist nun möglich + Ordnerwahl
 - Dateiname und bestehende Alt-Beschreibung werden ebenfalls an die API geschickt
