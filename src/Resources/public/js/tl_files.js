@@ -22,7 +22,8 @@ async function generateImageTag($event, el) {
         const data = await response.json();
 
         if (data.success) {
-            showNotification('Alt-Text erfolgreich generiert!', 'success');
+            const altText = data?.data?.[0]?.altTag || ''
+            showNotification(`Alt-Text erfolgreich generiert "${altText}"`, 'success');
         } else if (data?.data?.length) {
             data?.data.forEach(item => {
                 showNotification(item.message || 'Fehler bei der Generierung des Alt-Texts.', 'error');

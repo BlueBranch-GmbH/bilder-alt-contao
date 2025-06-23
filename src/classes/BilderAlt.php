@@ -229,7 +229,8 @@ class BilderAlt
         $keywords = explode(',', Config::get('bilderAltKeywords') ?? '');
         $fileModel = FilesModel::findByPath($filePath);
 
-        if ($fileModel) {
+        $sendExistingAltText = Config::get('bilderAltAddExistingAltTag');
+        if ($fileModel && $sendExistingAltText === true) {
             if ($alt = $this->getAltTextFromMeta($fileModel->meta)) {
                 array_unshift($keywords, $alt);
             }
