@@ -32,6 +32,9 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltKeywords'] = [
         'tl_class' => 'clr w100',
         'preserveTags' => true,
         'maxlength' => 255
+    ],
+    'save_callback' => [
+        ['SettingsCallbacks', 'cleanKeywords']
     ]
 ];
 
@@ -48,3 +51,12 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltCredits'] = [
         ['Bluebranch\BilderAlt\EventListener\TlSettingsCallback', 'loadCredits']
     ]
 ];
+
+class SettingsCallbacks
+{
+    public function cleanKeywords($value)
+    {
+        $keywords = array_filter(array_map('trim', explode(',', $value ?? '')));
+        return implode(', ', $keywords);
+    }
+}
