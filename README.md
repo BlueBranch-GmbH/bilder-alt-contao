@@ -57,6 +57,10 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.3.3 - 2025-06-30
+- Fix credits steps by process
+- Show result text in the message box
+
 ### 1.3.0 - 2025-06-21
 - Support für svg, heic, heif, tif, tiff hinzugefügt
 
