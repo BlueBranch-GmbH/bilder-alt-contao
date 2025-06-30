@@ -15,7 +15,9 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltApiKey'] = [
 $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltAutoGenerate'] = [
     'label' => &$GLOBALS['TL_LANG']['tl_settings']['bilderAltAutoGenerate'],
     'inputType' => 'checkbox',
-    'eval' => ['tl_class' => 'w50 m12']
+    'eval' => [
+        'tl_class' => 'w50 m12'
+    ]
 ];
 
 $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltAddExistingAltTag'] = [

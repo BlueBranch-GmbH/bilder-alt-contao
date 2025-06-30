@@ -1,15 +1,15 @@
 document.addEventListener('DOMContentLoaded', () => {
-    const $ = id => document.getElementById(id);
+    const batchStartButton = document.getElementById('batch-start');
+    const batchStopButton = document.getElementById('batch-stop');
+    const progressContainer = document.getElementById('batch-progress-container');
+    const progressBar = document.getElementById('batch-progress-bar');
+    const progressText = document.getElementById('batch-progress-text');
+    const filesList = document.getElementById('batch-files-list');
+    const creditsCount = document.getElementById('credits-count');
 
-    const batchStartButton = $('batch-start');
-    const batchStopButton = $('batch-stop');
-    const progressContainer = $('batch-progress-container');
-    const progressBar = $('batch-progress-bar');
-    const progressText = $('batch-progress-text');
-    const filesList = $('batch-files-list');
-    const creditsCount = $('credits-count');
-
-    if (!batchStartButton || !filesList) return;
+    if (!batchStartButton || !filesList) {
+        return;
+    }
 
     let filesQueue = [];
     let processedCount = 0;
@@ -66,22 +66,33 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     async function processFilePair(file1, file2 = null) {
-        if (shouldStop) return;
+        if (shouldStop) {
+            return;
+        }
 
         [file1, file2].filter(Boolean).forEach(file => setStatus(file, 'Wird verarbeitet...', 'processing'));
 
-        if (!updateCredits(file2 ? 2 : 1)) return;
-
         try {
+            if (!updateCredits(1)) {
+                return;
+            }
+
             const result1 = await processApiRequest(file1);
+
             handleResult(file1, result1);
 
             if (file2 && !shouldStop) {
+                if (!updateCredits(1)) {
+                    return;
+                }
+
                 const result2 = await processApiRequest(file2);
+
                 handleResult(file2, result2);
             }
         } catch (err) {
             console.error('Fehler bei der Batch-Verarbeitung:', err);
+
             [file1, file2].filter(Boolean).forEach(file => {
                 setStatus(file, `Fehler: ${err.message || 'Unbekannter Fehler'}`, 'error');
             });
@@ -96,12 +107,16 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function handleResult(file, data) {
+        if (data?.success && data?.data?.[0]?.altTag) {
+            const altText = data.data[0].altTag
+            showNotification(`Alt-Text erfolgreich generiert "${altText}"`, 'success');
+        }
+
         if (data?.success) {
             setStatus(file, 'Erfolgreich', 'success');
         } else {
             const msg = data?.data?.[0]?.message || data?.message || 'Fehler';
             setStatus(file, msg, 'error');
-            console.error('Fehler bei der Verarbeitung:', data);
         }
     }
 
@@ -115,12 +130,17 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const [file1, file2] = remaining;
         await processFilePair(file1, file2);
-        setTimeout(processQueue, 800);
+        setTimeout(processQueue, 600);
     }
 
     function startProcessing() {
-        if (!collectFiles()) return showNotification('Keine Dateien gefunden', 'error');
-        if (currentCredits <= 0) return showNotification('Keine Credits verfügbar', 'error');
+        if (!collectFiles()) {
+            return showNotification('Keine Dateien gefunden', 'error');
+        }
+
+        if (currentCredits <= 0) {
+            return showNotification('Keine Credits verfügbar', 'error');
+        }
 
         shouldStop = false;
         isProcessing = true;
@@ -144,21 +164,14 @@ document.addEventListener('DOMContentLoaded', () => {
         showNotification(msg, shouldStop ? 'info' : 'success');
     }
 
-    batchStartButton.addEventListener('click', startProcessing);
-    batchStopButton?.addEventListener('click', () => {
-        shouldStop = true;
-        showNotification('Verarbeitung wird angehalten...', 'info');
-    });
-
-    // Notification-System
     function showNotification(message, type = 'info') {
-        let container = $('bilder-alt-notifications');
+        let container = document.getElementById('bilder-alt-notifications');
 
         if (!container) {
             container = document.createElement('div');
             container.id = 'bilder-alt-notifications';
             Object.assign(container.style, {
-                position: 'fixed', zIndex: '9999', top: '10px', right: '10px', width: '300px'
+                position: 'fixed', zIndex: '9999', top: '10px', right: '10px', width: '300px', background: '#fff'
             });
             document.body.appendChild(container);
         }
@@ -183,4 +196,10 @@ document.addEventListener('DOMContentLoaded', () => {
             }, 500);
         }, 5000);
     }
+
+    batchStartButton.addEventListener('click', startProcessing);
+    batchStopButton?.addEventListener('click', () => {
+        shouldStop = true;
+        showNotification('Verarbeitung wird angehalten...', 'info');
+    });
 });
