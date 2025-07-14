@@ -19,12 +19,18 @@ class BackendTlFilesListener extends Backend
     const IMAGE_AI = 'bundles/bilderalt/icons/ai.svg';
     const IMAGE_AI_NO_ALT = 'bundles/bilderalt/icons/ai-no-alt.svg';
 
+    private RequestStack $requestStack;
+    private ScopeMatcher $scopeMatcher;
+
     public function __construct(
-        private readonly RequestStack $requestStack,
-        private readonly ScopeMatcher $scopeMatcher,
+        RequestStack $requestStack,
+        ScopeMatcher $scopeMatcher
     )
     {
         parent::__construct();
+
+        $this->requestStack = $requestStack;
+        $this->scopeMatcher = $scopeMatcher;
     }
 
     /**
@@ -36,11 +42,9 @@ class BackendTlFilesListener extends Backend
             return;
         }
 
-        // JS + CSS laden
         $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/bilderalt/js/tl_files.js|static';
         $GLOBALS['TL_CSS'][] = 'bundles/bilderalt/css/tl_files.css';
 
-        // Einzelbutton in der Dateiliste
         $GLOBALS['TL_DCA']['tl_files']['list']['operations']['bilder_alt_button'] = [
             'label' => ['Alt Text', 'Alt Text generieren'],
             'href' => 'key=',
@@ -48,10 +52,8 @@ class BackendTlFilesListener extends Backend
             'button_callback' => [self::class, 'renderButton'],
         ];
 
-        // Button unterhalb der Mehrfachauswahl
         $GLOBALS['TL_DCA']['tl_files']['select']['buttons_callback'][] = [self::class, 'modifySelectButtons'];
 
-        // Bulk-Action verarbeiten
         if (
             Input::post('FORM_SUBMIT') === 'tl_select' &&
             Input::post('bilder_alt_bulk') === 'getSelectedFiles'
