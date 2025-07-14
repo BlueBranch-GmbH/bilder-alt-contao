@@ -1,3 +1,6 @@
+const IMAGE_AI = 'bundles/bilderalt/icons/ai.svg';
+const IMAGE_AI_NO_ALT = 'bundles/bilderalt/icons/ai-no-alt.svg';
+
 async function generateImageTag($event, el) {
     $event?.preventDefault();
 
@@ -24,6 +27,7 @@ async function generateImageTag($event, el) {
         if (data.success) {
             const altText = data?.data?.[0]?.altTag || ''
             showNotification(`Alt-Text erfolgreich generiert "${altText}"`, 'success');
+            updateElLink(el);
         } else if (data?.data?.length) {
             data?.data.forEach(item => {
                 showNotification(item.message || 'Fehler bei der Generierung des Alt-Texts.', 'error');
@@ -41,6 +45,19 @@ async function generateImageTag($event, el) {
             loadingSpan.remove();
         }
     }
+}
+
+function updateElLink(el) {
+    if (!el) {
+        return
+    }
+    el.classList.remove('no-alt');
+
+    const img = el.querySelector('img');
+    if (!img) {
+        return;
+    }
+    img.src = IMAGE_AI;
 }
 
 function showNotification(message, type = 'info') {

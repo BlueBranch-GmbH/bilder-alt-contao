@@ -1,6 +1,19 @@
-.bilder_alt_button {
-
+/*li.tl_file:has(.bilder_alt_button.no-alt) .tl_left > a {
+    position: relative;
 }
+
+li.tl_file:has(.bilder_alt_button.no-alt) .tl_left > a::before {
+    content: "no alt tag";
+    position: absolute;
+    top: 5px;
+    left: -10px;
+    display: block;
+    width: 7px;
+    height: 7px;
+    background: url("/bundles/bilderalt/icons/no-alt.svg") center center no-repeat;
+    background-size: 100%;
+    text-indent: -9999px;
+}*/
 
 .bilder_alt_button.loading img {
     display: none;

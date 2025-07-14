@@ -4,16 +4,25 @@ namespace Bluebranch\BilderAlt\EventListener;
 
 use Bluebranch\BilderAlt\config\Constants;
 use Contao\Backend;
+use Contao\CoreBundle\Routing\ScopeMatcher;
 use Contao\DataContainer;
+use Contao\FilesModel;
 use Contao\Image;
 use Contao\Input;
 use Contao\StringUtil;
 use Contao\System;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class BackendTlFilesListener extends Backend
 {
 
-    public function __construct()
+    const IMAGE_AI = 'bundles/bilderalt/icons/ai.svg';
+    const IMAGE_AI_NO_ALT = 'bundles/bilderalt/icons/ai-no-alt.svg';
+
+    public function __construct(
+        private readonly RequestStack $requestStack,
+        private readonly ScopeMatcher $scopeMatcher,
+    )
     {
         parent::__construct();
     }
@@ -23,7 +32,7 @@ class BackendTlFilesListener extends Backend
      */
     public function __invoke(string $table): void
     {
-        if ($table !== 'tl_files') {
+        if ($table !== 'tl_files' || $this->isFrontend()) {
             return;
         }
 
@@ -35,7 +44,7 @@ class BackendTlFilesListener extends Backend
         $GLOBALS['TL_DCA']['tl_files']['list']['operations']['bilder_alt_button'] = [
             'label' => ['Alt Text', 'Alt Text generieren'],
             'href' => 'key=',
-            'icon' => 'bundles/bilderalt/icons/ai.svg',
+            'icon' => self::IMAGE_AI,
             'button_callback' => [self::class, 'renderButton'],
         ];
 
@@ -68,14 +77,41 @@ class BackendTlFilesListener extends Backend
             return '';
         }
 
+        $model = FilesModel::findByPath($row['id']);
+        $hasAltInAllLanguages = true;
+
+        if ($model !== null) {
+            $meta = StringUtil::deserialize($model->meta);
+            if (is_array($meta)) {
+                if (empty($meta)) {
+                    $hasAltInAllLanguages = false;
+                }
+                foreach ($meta as $lang => $metaEntry) {
+                    if (empty($metaEntry['alt'])) {
+                        $hasAltInAllLanguages = false;
+                        break;
+                    }
+                }
+            } else {
+                $hasAltInAllLanguages = false;
+            }
+        } else {
+            $hasAltInAllLanguages = false;
+        }
+
+        if (!$hasAltInAllLanguages) {
+            $icon = self::IMAGE_AI_NO_ALT;
+        }
+
         $href = self::addToUrl($href . '&id=' . $row['id']);
 
         return sprintf(
-            '<a href="%s" title="%s" %s data-file-path="%s" onclick="generateImageTag(event, this)" class="bilder_alt_button">%s</a>',
+            '<a href="%s" title="%s" data-file-path="%s" onclick="generateImageTag(event, this)" class="bilder_alt_button %s">%s</a>',
             $href,
             StringUtil::specialchars($title),
-            $attributes,
+            //$attributes,
             $row['id'],
+            $hasAltInAllLanguages ?: 'no-alt',
             Image::getHtml($icon, $label, 'style="width: 16px; height: 16px;"')
         );
     }
@@ -95,5 +131,10 @@ class BackendTlFilesListener extends Backend
         );
 
         return $buttons;
+    }
+
+    public function isFrontend()
+    {
+        return $this->scopeMatcher->isFrontendRequest($this->requestStack->getCurrentRequest());
     }
 }
