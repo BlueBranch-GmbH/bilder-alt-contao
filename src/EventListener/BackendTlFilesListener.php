@@ -85,7 +85,7 @@ class BackendTlFilesListener extends Backend
             return '';
         }
 
-        $model = FilesModel::findByPath($row['id']);
+        $model = FilesModel::findByPath(urldecode($row['id']));
         $hasAltInAllLanguages = true;
 
         if ($model !== null) {
