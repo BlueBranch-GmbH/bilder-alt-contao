@@ -15,12 +15,18 @@ use Symfony\Component\HttpFoundation\RequestStack;
 
 class BackendTlFilesListener extends Backend
 {
-
     const IMAGE_AI = 'bundles/bilderalt/icons/ai.svg';
     const IMAGE_AI_NO_ALT = 'bundles/bilderalt/icons/ai-no-alt.svg';
 
-    private RequestStack $requestStack;
-    private ScopeMatcher $scopeMatcher;
+    /**
+     * @var RequestStack
+     */
+    private $requestStack;
+
+    /**
+     * @var ScopeMatcher
+     */
+    private $scopeMatcher;
 
     public function __construct(
         RequestStack $requestStack,
@@ -135,8 +141,14 @@ class BackendTlFilesListener extends Backend
         return $buttons;
     }
 
-    public function isFrontend()
+    public function isFrontend(): bool
     {
-        return $this->scopeMatcher->isFrontendRequest($this->requestStack->getCurrentRequest());
+        $request = $this->requestStack->getCurrentRequest();
+
+        if (null === $request) {
+            return false;
+        }
+
+        return $this->scopeMatcher->isFrontendRequest($request);
     }
 }
