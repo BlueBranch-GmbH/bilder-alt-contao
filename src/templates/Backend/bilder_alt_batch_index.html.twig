@@ -15,11 +15,13 @@
             <p>Keine Bilder ausgewählt</p>
         {% else %}
             <div class="batch-controls">
-                <button id="batch-start" class="tl_submit">Batch-Verarbeitung starten</button>
+                <button id="batch-start" class="tl_submit">Alt-Texte generieren</button>
+                <button id="batch-start-with-none" class="tl_submit">Alt-Texte generieren (existierende überspringen)
+                </button>
                 <button id="batch-stop" class="tl_submit" style="display:none;">Verarbeitung stoppen</button>
             </div>
 
-            <div id="batch-progress-container" style="display:none;" class="batch-progress">
+            <div id="batch-progress-container" style="opacity: 0;" class="batch-progress">
                 <div class="batch-progress-bar-container">
                     <div id="batch-progress-bar" class="batch-progress-bar"></div>
                 </div>
@@ -32,16 +34,30 @@
                     <tr>
                         <th>Vorschau</th>
                         <th>Dateiname</th>
+                        <th>Alt-Text</th>
                         <th>Status</th>
                     </tr>
                     </thead>
+
                     <tbody>
                     {% for file in imageFiles %}
-                        <tr class="file-item" data-path="{{ file.path }}" data-uuid="{{ file.uuid }}">
+                        <tr class="file-item"
+                            data-path="{{ file.model.path }}"
+                            data-uuid="{{ file.model.uuid }}"
+                            data-has="{{ file.hasAlt ? 1 : 0 }}">
+
                             <td class="preview">
-                                {{ contao_figure(file.path, [100, 100, 'proportional']) }}
+                                {{ contao_figure(file.model.path, [100, 100, 'proportional']) }}
                             </td>
-                            <td class="filename">{{ file.name }}</td>
+
+                            <td class="filename">{{ file.model.name }}</td>
+
+                            <td class="alt-text">
+                                {% for meta in file.meta %}
+                                    <p>{{ meta.alt }}</p>
+                                {% endfor %}
+                            </td>
+
                             <td class="status">-</td>
                         </tr>
                     {% endfor %}

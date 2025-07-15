@@ -85,7 +85,7 @@ class BilderAltApiController extends AbstractController
 
             foreach ($languages as $language) {
                 $responses[] = $this->bilderAlt->sendToExternalApi(
-                    $filePath,
+                    $absolutePath,
                     $apiKey,
                     $language,
                     implode(',', $keywords),

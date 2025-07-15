@@ -8,6 +8,7 @@ use Contao\Config;
 use Contao\CoreBundle\Controller\AbstractBackendController;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\FilesModel;
+use Contao\StringUtil;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
@@ -80,9 +81,19 @@ class BilderAltBatchController extends AbstractBackendController
 
         $imageModels = $this->getImagesFromFiles($selectedFiles, Constants::ALLOWED_EXTENSIONS);
 
-        /*foreach ($imageModels as $imageModel) {
-            echo $imageModel->path . '<br>';
-        }*/
+        $images = array_map(function ($model) {
+            $meta = [];
+            if (!empty($model->meta)) {
+                $meta = StringUtil::deserialize($model->meta);
+            }
+            return [
+                'model' => $model,
+                'meta' => is_array($meta) ? $meta : [],
+                'hasAlt' => array_find($meta, function ($value) {
+                    return !empty($value['alt']);
+                })
+            ];
+        }, $imageModels);
 
         $apiKey = Config::get('bilderAltApiKey');
         $creditsInfo = ['credits' => 0];
@@ -104,7 +115,7 @@ class BilderAltBatchController extends AbstractBackendController
         return $this->render('@BilderAlt/Backend/bilder_alt_batch_index.html.twig', [
             'title' => 'SEO Alt Text Generator',
             'headline' => 'SEO Alt Text Generator',
-            'imageFiles' => $imageModels,
+            'imageFiles' => $images,
             'credits' => $creditsInfo['credits'],
             'back_link' => '/contao/tl_files',
         ]);
