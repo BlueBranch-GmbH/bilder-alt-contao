@@ -11,7 +11,6 @@ use Contao\FilesModel;
 use Contao\StringUtil;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
@@ -86,12 +85,18 @@ class BilderAltBatchController extends AbstractBackendController
             if (!empty($model->meta)) {
                 $meta = StringUtil::deserialize($model->meta);
             }
+
+            $hasAlt = count($meta) > 0;
+            foreach ($meta as $value) {
+                if (empty($value['alt'])) {
+                    $hasAlt = false;
+                }
+            }
+
             return [
                 'model' => $model,
                 'meta' => is_array($meta) ? $meta : [],
-                'hasAlt' => array_find($meta, function ($value) {
-                    return !empty($value['alt']);
-                })
+                'hasAlt' => $hasAlt
             ];
         }, $imageModels);
 
