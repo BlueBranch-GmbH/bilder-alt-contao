@@ -6,6 +6,7 @@ $GLOBALS['TL_LANG']['tl_settings']['bilderAltAutoGenerate'] = ['Automatically ge
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltAddExistingAltTag'] = ['Send existing alt texts', 'If active, existing alt texts are sent along as keywords to retain the context.'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltKeywords'] = ['Keywords', 'Enter a comma-separated list of keywords to be considered for SEO.'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltCredits'] = ['Available credits', 'Top up your credits: https://app.bilder-alt.de/'];
+$GLOBALS['TL_LANG']['tl_settings']['bilderAltExcludeLanguages'] = ['Exclude languages', 'No alt texts are generated for these excluded languages.'];
 
 // Error
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltNoCredits'] = 'No credits available – Get 25 free credits at https://app.bilder-alt.de/';

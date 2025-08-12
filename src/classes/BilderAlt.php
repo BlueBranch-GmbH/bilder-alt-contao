@@ -57,21 +57,23 @@ class BilderAlt
     {
         $languages = [];
 
+        $excludedLanguages = Config::get('bilderAltExcludeLanguages') ? StringUtil::deserialize(Config::get('bilderAltExcludeLanguages'), true) : [];
+
         if (class_exists(PageModel::class)) {
             $roots = PageModel::findByType('root');
             if ($roots !== null) {
                 while ($roots->next()) {
-                    if (!empty($roots->language)) {
+                    if (!empty($roots->language) && !in_array($roots->language, $excludedLanguages)) {
                         $languages[$roots->language] = $this->getLanguage($roots->language);
                     }
                 }
             }
         }
 
-        if (empty($languages)) {
+        /*if (empty($languages)) {
             $user = BackendUser::getInstance();
             $languages[$user->language] = $this->getLanguage($user->language);
-        }
+        }*/
 
         return $languages;
     }

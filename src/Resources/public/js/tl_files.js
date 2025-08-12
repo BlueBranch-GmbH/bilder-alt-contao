@@ -33,7 +33,8 @@ async function generateImageTag($event, el) {
                 showNotification(item.message || 'Fehler bei der Generierung des Alt-Texts.', 'error');
             })
         } else {
-            showNotification('Fehler bei der Generierung des Alt-Texts.', 'error');
+            const message = data?.message || 'Fehler bei der Generierung des Alt-Texts.';
+            showNotification(message, 'error');
         }
     } catch (error) {
         console.error('Fehler beim API-Aufruf:', error);

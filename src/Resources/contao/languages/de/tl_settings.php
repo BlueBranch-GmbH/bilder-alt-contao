@@ -6,6 +6,7 @@ $GLOBALS['TL_LANG']['tl_settings']['bilderAltAutoGenerate'] = ['Automatsch Alt-T
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltAddExistingAltTag'] = ['Bestehende Alt-Texte mitsenden', 'Wenn aktiv, werden bestehende Alt-Texte als Keywords mitgeschickt um den Context zu behalten.'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltKeywords'] = ['Keywords', 'Kommagetrennte Keyword-Liste angeben, welche für SEO berücksichtigt werden.'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltCredits'] = ['Verfügbare Credits', 'Credits aufladen: https://app.bilder-alt.de/'];
+$GLOBALS['TL_LANG']['tl_settings']['bilderAltExcludeLanguages'] = ['Sprachen ausschließen', 'Für diese ausgeschlossenen Sprachen werden keine Alt-Texte generiert.'];
 
 // Error
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltNoCredits'] = 'Keine verfügbaren Credits - 25 Credits kostenlos unter https://app.bilder-alt.de/';

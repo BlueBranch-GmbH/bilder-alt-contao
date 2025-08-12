@@ -42,7 +42,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         if (currentCredits <= 0) {
             shouldStop = true;
-            showNotification('Keine Credits mehr verfügbar. Verarbeitung wird gestoppt.', 'error');
+            showNotification('[Bilder Alt] Keine Credits mehr verfügbar. Verarbeitung wird gestoppt.', 'error');
             finishProcessing();
             return false;
         }
@@ -102,7 +102,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 updateProgress();
             }
         } catch (err) {
-            console.error('Fehler bei der Batch-Verarbeitung:', err);
+            console.error('[Bilder Alt] Fehler bei der Batch-Verarbeitung:', err);
             [file1, file2].filter(Boolean).forEach(file => {
                 updateStatusCell(file, `Fehler: ${err.message || 'Unbekannter Fehler'}`, 'error');
             });
@@ -116,7 +116,7 @@ document.addEventListener('DOMContentLoaded', () => {
     function handleResult(file, data) {
         if (data?.success && data?.data?.[0]?.altTag) {
             const altText = data.data[0].altTag
-            showNotification(`Alt-Text erfolgreich generiert "${altText}"`, 'success');
+            showNotification(`[Bilder Alt] Alt-Text erfolgreich generiert "${altText}"`, 'success');
         }
 
         if (data?.success) {
@@ -147,11 +147,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     function startProcessing() {
         if (!collectFiles()) {
-            return showNotification('Keine Dateien gefunden', 'error');
+            return showNotification('[Bilder Alt] Keine Dateien gefunden', 'error');
         }
 
         if (currentCredits < filesQueue.length) {
-            return showNotification('Keine Credits verfügbar', 'error');
+            return showNotification('[Bilder Alt] Keine Credits verfügbar', 'error');
         }
 
         shouldStop = false;
@@ -173,7 +173,7 @@ document.addEventListener('DOMContentLoaded', () => {
         batchStartWithNoneButton.style.display = 'inline-block';
         batchStopButton.style.display = 'none';
         progressContainer.style.opacity = '0';
-        const msg = shouldStop ? 'Verarbeitung wurde abgebrochen' : 'Alle Dateien wurden verarbeitet';
+        const msg = shouldStop ? '[Bilder Alt] Verarbeitung wurde abgebrochen' : '[Bilder Alt] Alle Dateien wurden verarbeitet';
         showNotification(msg, shouldStop ? 'info' : 'success');
     }
 
@@ -222,6 +222,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     batchStopButton?.addEventListener('click', () => {
         shouldStop = true;
-        showNotification('Verarbeitung wird angehalten...', 'info');
+        showNotification('[Bilder Alt] Verarbeitung wird angehalten...', 'info');
     });
 });
