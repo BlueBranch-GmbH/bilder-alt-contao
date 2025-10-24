@@ -3,6 +3,7 @@
 namespace Bluebranch\BilderAlt\EventListener;
 
 use Bluebranch\BilderAlt\config\Constants;
+use Bluebranch\BilderAlt\Security\BilderAltPermissions;
 use Contao\Backend;
 use Contao\CoreBundle\Routing\ScopeMatcher;
 use Contao\DataContainer;
@@ -51,25 +52,30 @@ class BackendTlFilesListener extends Backend
         $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/bilderalt/js/tl_files.js|static';
         $GLOBALS['TL_CSS'][] = 'bundles/bilderalt/css/tl_files.css';
 
-        $GLOBALS['TL_DCA']['tl_files']['list']['operations']['bilder_alt_button'] = [
-            'label' => ['Alt Text', 'Alt Text generieren'],
-            'href' => 'key=',
-            'icon' => self::IMAGE_AI,
-            'button_callback' => [self::class, 'renderButton'],
-        ];
 
-        $GLOBALS['TL_DCA']['tl_files']['select']['buttons_callback'][] = [self::class, 'modifySelectButtons'];
+        if (BilderAltPermissions::canCreateSingle()) {
+            $GLOBALS['TL_DCA']['tl_files']['list']['operations']['bilder_alt_button'] = [
+                'label' => ['Alt Text', 'Alt Text generieren'],
+                'href' => 'key=',
+                'icon' => self::IMAGE_AI,
+                'button_callback' => [self::class, 'renderButton'],
+            ];
+        }
 
-        if (
-            Input::post('FORM_SUBMIT') === 'tl_select' &&
-            Input::post('bilder_alt_bulk') === 'getSelectedFiles'
-        ) {
-            $session = System::getContainer()->get('request_stack')->getSession();
-            $session->set('CURRENT', ['IDS' => Input::post('IDS')]);
-            $selectedFiles = $session->get('CURRENT')['IDS'] ?? [];
+        if (BilderAltPermissions::canCreateBatch()) {
+            $GLOBALS['TL_DCA']['tl_files']['select']['buttons_callback'][] = [self::class, 'modifySelectButtons'];
 
-            if (!empty($selectedFiles)) {
-                $this->redirect('/contao/bilder-alt/batch');
+            if (
+                Input::post('FORM_SUBMIT') === 'tl_select' &&
+                Input::post('bilder_alt_bulk') === 'getSelectedFiles'
+            ) {
+                $session = System::getContainer()->get('request_stack')->getSession();
+                $session->set('CURRENT', ['IDS' => Input::post('IDS')]);
+                $selectedFiles = $session->get('CURRENT')['IDS'] ?? [];
+
+                if (!empty($selectedFiles)) {
+                    $this->redirect('/contao/bilder-alt/batch');
+                }
             }
         }
     }

@@ -4,6 +4,7 @@ namespace Bluebranch\BilderAlt\EventListener;
 
 use Bluebranch\BilderAlt\classes\BilderAlt;
 use Bluebranch\BilderAlt\config\Constants;
+use Bluebranch\BilderAlt\Security\BilderAltPermissions;
 use Contao\Config;
 use Contao\System;
 use Symfony\Component\HttpFoundation\File\File;
@@ -22,7 +23,7 @@ class UploadListener
 
     public function __invoke(array $files): void
     {
-        if (!Config::get('bilderAltAutoGenerate')) {
+        if (!Config::get('bilderAltAutoGenerate') || !BilderAltPermissions::canCreateAutoUpload()) {
             return;
         }
 
