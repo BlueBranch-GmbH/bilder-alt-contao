@@ -1,19 +1,6 @@
 <?php
 
-/**
- * Extend tl_user palettes
- */
-$GLOBALS['TL_DCA']['tl_user']['palettes']['extend'] = str_replace(
-    'formp;',
-    'formp;{bilder_alt_legend},bilder_alt;',
-    $GLOBALS['TL_DCA']['tl_user']['palettes']['extend']
-);
-
-$GLOBALS['TL_DCA']['tl_user']['palettes']['custom'] = str_replace(
-    'formp;',
-    'formp;{bilder_alt_legend},bilder_alt;',
-    $GLOBALS['TL_DCA']['tl_user']['palettes']['custom']
-);
+use Contao\CoreBundle\DataContainer\PaletteManipulator;
 
 /**
  * Add fields to tl_user
@@ -27,3 +14,12 @@ $GLOBALS['TL_DCA']['tl_user']['fields']['bilder_alt'] = [
     'eval'      => ['multiple' => true],
     'sql'       => "blob NULL"
 ];
+
+/**
+ * Extend tl_user palettes
+ */
+PaletteManipulator::create()
+    ->addLegend('bilder_alt_legend', 'amg_legend', PaletteManipulator::POSITION_AFTER)
+    ->addField('bilder_alt', 'bilder_alt_legend', PaletteManipulator::POSITION_APPEND)
+    ->applyToPalette('extend', 'tl_user')
+    ->applyToPalette('custom', 'tl_user');

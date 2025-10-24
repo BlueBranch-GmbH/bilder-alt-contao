@@ -1,13 +1,6 @@
 <?php
 
-/**
- * Extend tl_user_group palettes
- */
-$GLOBALS['TL_DCA']['tl_user_group']['palettes']['default'] = str_replace(
-    'formp;',
-    'formp;{bilder_alt_legend},bilder_alt;',
-    $GLOBALS['TL_DCA']['tl_user_group']['palettes']['default']
-);
+use Contao\CoreBundle\DataContainer\PaletteManipulator;
 
 /**
  * Add fields to tl_user_group
@@ -21,3 +14,11 @@ $GLOBALS['TL_DCA']['tl_user_group']['fields']['bilder_alt'] = [
     'eval'      => ['multiple' => true],
     'sql'       => "blob NULL"
 ];
+
+/**
+ * Extend tl_user_group palettes
+ */
+PaletteManipulator::create()
+    ->addLegend('bilder_alt_legend', 'amg_legend', PaletteManipulator::POSITION_AFTER)
+    ->addField('bilder_alt', 'bilder_alt_legend', PaletteManipulator::POSITION_APPEND)
+    ->applyToPalette('default', 'tl_user_group');
