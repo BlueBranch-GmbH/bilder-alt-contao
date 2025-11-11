@@ -184,7 +184,7 @@ document.addEventListener('DOMContentLoaded', () => {
             container = document.createElement('div');
             container.id = 'bilder-alt-notifications';
             Object.assign(container.style, {
-                position: 'fixed', zIndex: '9999', top: '10px', right: '10px', width: '300px', background: '#fff'
+                position: 'fixed', zIndex: '9999', top: '10px', right: '10px', width: '300px', background: 'var(--body-bg, #fff)', display: 'flex', flexDirection: 'column', gap: '10px'
             });
             document.body.appendChild(container);
         }
@@ -194,8 +194,7 @@ document.addEventListener('DOMContentLoaded', () => {
         Object.assign(div.style, {
             padding: '10px 10px 10px 50px',
             borderRadius: '3px',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
-            marginBottom: '10px'
+            boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
         });
         div.innerHTML = message;
         container.appendChild(div);

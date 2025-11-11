@@ -28,14 +28,14 @@
 .batch-progress-bar-container {
     width: 100%;
     height: 10px;
-    background-color: #eee;
+    background-color: var(--panel-bg, #eee);
     border-radius: 4px;
     overflow: hidden;
 }
 
 .batch-progress-bar {
     height: 100%;
-    background-color: #8ab858;
+    background-color: var(--green, #8ab858);
     width: 0;
     transition: width 0.3s ease;
 }
@@ -58,11 +58,11 @@
 .batch-files-list td {
     padding: 8px;
     text-align: left;
-    border-bottom: 1px solid #ddd;
+    border-bottom: 1px solid var(--border, #ddd);
 }
 
 .batch-files-list th {
-    background-color: #f2f2f2;
+    background-color: var(--table-header, #f2f2f2);
 }
 
 .batch-files-list .preview {
@@ -74,20 +74,20 @@
 }
 
 .batch-files-list .status.processing {
-    color: #f39c12;
+    color: var(--orange, #f39c12);
 }
 
 .batch-files-list .status.success {
-    color: #2ecc71;
+    color: var(--green, #2ecc71);
 }
 
 .batch-files-list .status.error {
-    color: #e74c3c;
+    color: var(--red, #e74c3c);
 }
 
 .credits {
     font-weight: bold;
-    background-color: #f6f6f6;
+    background-color: var(--panel-bg, #f6f6f6);
     padding: 5px 10px;
     border-radius: 4px;
     display: inline-block;
