@@ -54,7 +54,7 @@
 
                             <td class="alt-text">
                                 {% for meta in file.meta %}
-                                    <p>{{ meta.alt }}</p>
+                                    <p>{{ meta.alt|default }}</p>
                                 {% endfor %}
                             </td>
 
