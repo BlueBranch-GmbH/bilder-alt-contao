@@ -48,7 +48,7 @@ class BilderAltApiController extends AbstractController
      */
     public function generateByPath(Request $request): JsonResponse
     {
-        $filePath = urldecode($request->request->get('path', ''));
+        $filePath = $request->request->get('path', '');
         $contextUrl = $request->request->get('contextUrl', '');
 
         if (empty($filePath)) {
