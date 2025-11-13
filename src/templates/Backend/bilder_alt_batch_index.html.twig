@@ -42,7 +42,7 @@
                     <tbody>
                     {% for file in imageFiles %}
                         <tr class="file-item"
-                            data-path="{{ file.model.path }}"
+                            data-path="{{ file.model.path|url_encode }}"
                             data-uuid="{{ file.model.uuid }}"
                             data-has="{{ file.hasAlt ? 1 : 0 }}">
 
