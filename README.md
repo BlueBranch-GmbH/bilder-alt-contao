@@ -57,6 +57,22 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.5.x - 2025-10-24
+
+- Improve dark mode | thanks to https://github.com/lukasbableck
+- Add twig default pipe to meta.alt | thanks to https://github.com/lukasbableck
+- Add url encode for file path in batch view | thanks to https://github.com/lukasbableck
+- Implement user and group rights for bilder alt
+- Add a simple service to handle and check rights
+- Fix position with PaletteManipulator
+
+### 1.4.x - 2025-07-15
+
+- Implement a new column to the batch table to show existing alt text
+- Implement a new button to process only images without alt text
+- Fix warnings
+- Fix typos
+
 ### 1.3.3 - 2025-06-30
 - Fix credits steps by process
 - Show result text in the message box
