@@ -21,6 +21,36 @@ Mehr Informationen unter https://www.bilder-alt.de/contao-erweiterung
 Mit der offiziellen Contao-Erweiterung von SEO Alt Text Generator wird jeder Bild-Upload effizienter.
 Sobald ein neues Bild in die Mediathek geladen wird, erstellt die KI automatisch einen passenden Alt-Text – in natürlicher Sprache und optional mit deinem Wunsch-Keyword.
 
+## SEO-Texte für Seiten mit KI generieren
+
+Neben Alt-Texten für Bilder unterstützt die Erweiterung jetzt auch die automatische Generierung von **SEO-Titeln** (pageTitle) und **Meta-Beschreibungen** für Contao-Seiten.
+
+### Direkt auf der Seite
+
+Beim Bearbeiten einer Seite im Contao-Backend erscheinen zwei neue Buttons unterhalb der Seiten-Einstellungen:
+
+- **Titel generieren** – analysiert den Seiteninhalt und schlägt einen optimierten SEO-Titel vor
+- **Beschreibung generieren** – erstellt eine passende Meta-Beschreibung für die Seite
+
+Der generierte Text wird direkt in das jeweilige Feld eingetragen und kann vor dem Speichern noch manuell angepasst werden.
+
+> Hinweis: Die Seite muss veröffentlicht sein, damit die KI den Inhalt abrufen kann. Für unveröffentlichte Seiten wird ein entsprechender Hinweis angezeigt.
+
+### Mehrfachverarbeitung (Batch)
+
+Über die Seitenübersicht lässt sich eine neue Batch-Ansicht öffnen, in der alle regulären Seiten aufgelistet sind. Dort stehen sechs Schaltflächen zur Verfügung:
+
+| Schaltfläche | Beschreibung |
+|---|---|
+| Titel generieren | Generiert den SEO-Titel für alle ausgewählten Seiten |
+| Beschreibung generieren | Generiert die Meta-Beschreibung für alle ausgewählten Seiten |
+| Titel & Beschreibung generieren | Generiert beides für alle ausgewählten Seiten |
+| Titel generieren (nur leere) | Überspringt Seiten, bei denen bereits ein SEO-Titel vorhanden ist |
+| Beschreibung generieren (nur leere) | Überspringt Seiten, bei denen bereits eine Meta-Beschreibung vorhanden ist |
+| Titel & Beschreibung generieren (nur leere) | Generiert nur das, was pro Seite noch fehlt |
+
+Die Verarbeitung erfolgt sequenziell mit Fortschrittsanzeige. Jede Generierung kostet 2 Credits.
+
 ## Vorteile für Redakteur:innen und Entwickler
 
 - Zeit sparen: Keine händischen Alt-Texte mehr nötig
@@ -47,6 +77,36 @@ That’s it!
 
 More information at: https://www.bilder-alt.de/contao-erweiterung
 
+## AI-Generated SEO Texts for Pages
+
+In addition to alt texts for images, the extension now supports automatic generation of **SEO titles** (pageTitle) and **meta descriptions** for Contao pages.
+
+### Directly on the Page
+
+When editing a page in the Contao backend, two new buttons appear below the page settings:
+
+- **AI-Icon Generate title** – analyses the page content and suggests an optimised SEO title
+- **AI-Icon Generate description** – creates a suitable meta description for the page
+
+The generated text is inserted directly into the corresponding field and can still be adjusted manually before saving.
+
+> Note: The page must be published so that the AI can fetch its content. An informative error message is shown for unpublished pages.
+
+### Batch Processing
+
+A new batch view can be opened from the page list, showing all regular pages. Six buttons are available:
+
+| Button | Description |
+|---|---|
+| Generate title | Generates the SEO title for all selected pages |
+| Generate description | Generates the meta description for all selected pages |
+| Generate title & description | Generates both for all selected pages |
+| Generate title (empty only) | Skips pages that already have an SEO title |
+| Generate description (empty only) | Skips pages that already have a meta description |
+| Generate title & description (empty only) | Only generates what is missing per page |
+
+Processing runs sequentially with a progress indicator. Each generation costs 2 credits.
+
 ## Vielen Dank
 
 Unser Team Dank für die Unterstützung und das Benutzen von dem SEO Alt Text Generator.
@@ -56,6 +116,14 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 <3
 
 ## Changes
+
+### 1.6.x - 2026-02-22
+
+- Add AI-powered SEO title and meta description generation for pages
+- Add two buttons ("Generate title" / "Generate description") to the page edit form
+- Add batch processing view for pages with six action buttons
+- Add "empty only" batch modes that skip pages with already existing values
+- Show credit balance in batch view with live update during processing
 
 ### 1.5.x - 2025-10-24
 
