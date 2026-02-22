@@ -1,0 +1,59 @@
+.seiten-batch-table {
+    width: 100%;
+}
+
+.seiten-batch-table th,
+.seiten-batch-table td {
+    padding: 8px;
+    text-align: left;
+    border-bottom: 1px solid var(--border, #ddd);
+    vertical-align: top;
+}
+
+.seiten-batch-table th {
+    background-color: var(--table-header, #f2f2f2);
+}
+
+.seiten-batch-table .col-checkbox {
+    width: 30px;
+}
+
+.seiten-batch-table .col-status {
+    width: 160px;
+}
+
+.seiten-batch-table .col-title,
+.seiten-batch-table .col-page-title,
+.seiten-batch-table .col-description {
+    max-width: 200px;
+    word-break: break-word;
+}
+
+.seiten-batch-table .status.processing {
+    color: var(--orange, #f39c12);
+}
+
+.seiten-batch-table .status.success {
+    color: var(--green, #2ecc71);
+}
+
+.seiten-batch-table .status.error {
+    color: var(--red, #e74c3c);
+}
+
+.seiten-batch-table .status.skipped {
+    color: var(--text-secondary, #999);
+}
+
+.batch-controls-divider {
+    display: inline-block;
+    margin: 0 6px;
+    color: var(--border, #ccc);
+    vertical-align: middle;
+}
+
+.seiten-batch-root-group th {
+    background-color: var(--panel-bg, #eee);
+    font-weight: bold;
+    padding: 6px 8px;
+}

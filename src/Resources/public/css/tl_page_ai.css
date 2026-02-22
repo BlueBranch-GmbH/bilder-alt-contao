@@ -1,0 +1,33 @@
+.bilder_alt_page_btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    cursor: pointer;
+}
+
+.bilder_alt_page_btn.loading {
+    opacity: 0.7;
+    cursor: wait;
+}
+
+.bilder_alt_page_btn img {
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+}
+
+.bilder-alt-spinner {
+    display: inline-block;
+    width: 12px;
+    height: 12px;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #fff;
+    border-radius: 50%;
+    animation: bilder-alt-spin 0.7s linear infinite;
+    margin-left: 4px;
+    vertical-align: middle;
+}
+
+@keyframes bilder-alt-spin {
+    to { transform: rotate(360deg); }
+}

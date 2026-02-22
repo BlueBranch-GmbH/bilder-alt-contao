@@ -7,4 +7,13 @@ bilder_alt_controller:
   resource: ../../Controller/BilderAltBatchController.php
   type: annotation
   prefix: /
-  
+
+bilder_alt_seiten_api:
+  resource: ../../Controller/SeitenAiApiController.php
+  type: annotation
+  prefix: /
+
+bilder_alt_seiten_batch:
+  resource: ../../Controller/SeitenAiBatchController.php
+  type: annotation
+  prefix: /

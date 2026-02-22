@@ -206,7 +206,79 @@ class BilderAlt
         return isset($mapping[$language]) ? $mapping[$language] : 'de';
     }
 
-    protected function getLanguage(string $language): string
+    public function generatePageTitle(string $pageUrl, string $apiKey, string $language, string $keywords = ''): array
+    {
+        try {
+            $body = ['url' => $pageUrl, 'language' => $language];
+            if (!empty($keywords)) {
+                $body['keywords'] = $keywords;
+            }
+
+            $response = $this->httpClient->request('POST', self::API_BASE_URL . '/api/v1/openai/generate-title', [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'x-api-key' => $apiKey,
+                ],
+                'json' => $body,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $json = json_decode($response->getContent(false), true);
+            $data = $json['data'] ?? $json;
+            $title = $data['title'] ?? null;
+
+            if ($statusCode >= 200 && $statusCode < 300 && $title) {
+                return ['success' => true, 'title' => $title, 'statusCode' => $statusCode];
+            }
+
+            return [
+                'success' => false,
+                'message' => $json['message'] ?? 'Fehler bei der Generierung des Titels',
+                'statusCode' => $statusCode,
+            ];
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => 'Exception: ' . $e->getMessage()];
+        }
+    }
+
+    public function generatePageDescription(string $pageUrl, string $apiKey, string $language, string $keywords = ''): array
+    {
+        try {
+            $body = ['url' => $pageUrl, 'language' => $language];
+            if (!empty($keywords)) {
+                $body['keywords'] = $keywords;
+            }
+
+            $response = $this->httpClient->request('POST', self::API_BASE_URL . '/api/v1/openai/generate-description', [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'x-api-key' => $apiKey,
+                ],
+                'json' => $body,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $json = json_decode($response->getContent(false), true);
+            $data = $json['data'] ?? $json;
+            $description = $data['description'] ?? null;
+
+            if ($statusCode >= 200 && $statusCode < 300 && $description) {
+                return ['success' => true, 'description' => $description, 'statusCode' => $statusCode];
+            }
+
+            return [
+                'success' => false,
+                'message' => $json['message'] ?? 'Fehler bei der Generierung der Beschreibung',
+                'statusCode' => $statusCode,
+            ];
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => 'Exception: ' . $e->getMessage()];
+        }
+    }
+
+    public function getLanguage(string $language): string
     {
         $map = [
             'en' => 'english', 'en-US' => 'english', 'en-GB' => 'english',

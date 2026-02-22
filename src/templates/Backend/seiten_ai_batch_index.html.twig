@@ -1,0 +1,92 @@
+{% extends "@Contao/be_main" %}
+
+{% block title %}
+    <h1>{{ headline|default('KI SEO-Texte Generator') }}</h1>
+{% endblock %}
+
+{% block main_content %}
+    <div class="header batch-header">
+        <a href="javascript:history.back()" class="header_back" title="Zurück">Zurück</a>
+        <div id="credits-display" class="credits">Credits: <span id="credits-count">{{ credits }}</span></div>
+    </div>
+
+    <div class="batch-container">
+        {% if pages|length <= 0 %}
+            <p>Keine Seiten gefunden.</p>
+        {% else %}
+            <div class="batch-controls">
+                <button id="batch-generate-title" class="tl_submit">
+                    <img src="/bundles/bilderalt/icons/ai.svg" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
+                    Titel generieren
+                </button>
+                <button id="batch-generate-description" class="tl_submit">
+                    <img src="/bundles/bilderalt/icons/ai.svg" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
+                    Beschreibung generieren
+                </button>
+                <button id="batch-generate-both" class="tl_submit">
+                    <img src="/bundles/bilderalt/icons/ai.svg" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
+                    Titel &amp; Beschreibung generieren
+                </button>
+                <span class="batch-controls-divider">|</span>
+                <button id="batch-generate-title-empty" class="tl_submit">
+                    <img src="/bundles/bilderalt/icons/ai.svg" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
+                    Titel generieren (nur leere)
+                </button>
+                <button id="batch-generate-description-empty" class="tl_submit">
+                    <img src="/bundles/bilderalt/icons/ai.svg" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
+                    Beschreibung generieren (nur leere)
+                </button>
+                <button id="batch-generate-both-empty" class="tl_submit">
+                    <img src="/bundles/bilderalt/icons/ai.svg" alt="" style="width:16px;height:16px;vertical-align:middle;margin-right:4px;">
+                    Titel &amp; Beschreibung generieren (nur leere)
+                </button>
+                <button id="batch-stop" class="tl_submit" style="display:none;">Verarbeitung stoppen</button>
+            </div>
+
+            <div id="batch-progress-container" style="opacity: 0;" class="batch-progress">
+                <div class="batch-progress-bar-container">
+                    <div id="batch-progress-bar" class="batch-progress-bar"></div>
+                </div>
+                <div id="batch-progress-text" class="batch-progress-text">0/{{ pages|length }} verarbeitet</div>
+            </div>
+
+            <div id="batch-pages-list" class="batch-files-list">
+                <table class="tl_listing seiten-batch-table">
+                    <thead>
+                    <tr>
+                        <th class="col-checkbox">
+                            <input type="checkbox" id="batch-select-all" checked title="Alle auswählen">
+                        </th>
+                        <th>Seitenname</th>
+                        <th>SEO-Titel (pageTitle)</th>
+                        <th>Meta-Beschreibung</th>
+                        <th class="col-status">Status</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    {% for page in pages %}
+                        <tr class="page-item" data-id="{{ page.id }}" data-language="{{ page.language }}" data-has-title="{{ page.pageTitle ? '1' : '0' }}" data-has-description="{{ page.description ? '1' : '0' }}">
+                            <td class="col-checkbox">
+                                <input type="checkbox" class="page-checkbox" checked>
+                            </td>
+                            <td class="col-title">
+                                <strong>{{ page.title }}</strong>
+                                {% if page.rootTitle is defined and page.rootTitle %}
+                                    <br><small style="color: var(--text-secondary, #666);">{{ page.rootTitle }}</small>
+                                {% endif %}
+                            </td>
+                            <td class="col-page-title" data-field="pageTitle">{{ page.pageTitle|default('—') }}</td>
+                            <td class="col-description" data-field="description">{{ page.description|default('—') }}</td>
+                            <td class="status">-</td>
+                        </tr>
+                    {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        {% endif %}
+    </div>
+
+    <div class="footer batch-footer">
+        <a href="javascript:history.back()" class="header_back" title="Zurück">Zurück</a>
+    </div>
+{% endblock %}
