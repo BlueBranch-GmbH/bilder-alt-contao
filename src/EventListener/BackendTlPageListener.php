@@ -33,11 +33,11 @@ class BackendTlPageListener extends Backend
         $GLOBALS['TL_CSS'][] = 'bundles/bilderalt/css/tl_page_ai.css';
         $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/bilderalt/js/tl_page_ai.js|static';
 
-        if (BilderAltPermissions::canCreateSingle()) {
+        if (BilderAltPermissions::canCreatePageTitle() || BilderAltPermissions::canCreatePageDescription()) {
             $GLOBALS['TL_DCA']['tl_page']['edit']['buttons_callback'][] = [self::class, 'addEditButtons'];
         }
 
-        if (BilderAltPermissions::canCreateBatch()) {
+        if (BilderAltPermissions::canCreatePageBatch()) {
             $GLOBALS['TL_DCA']['tl_page']['list']['global_operations']['bilder_alt_seiten_batch'] = [
                 'label' => ['KI SEO-Texte generieren', 'Seitentitel und Beschreibungen mit KI generieren'],
                 'href' => '',
@@ -51,17 +51,21 @@ class BackendTlPageListener extends Backend
     {
         $aiIcon = Image::getHtml('bundles/bilderalt/icons/ai.svg', '', 'style="width: 16px; height: 16px; vertical-align: middle;"');
 
-        $buttons['bilder_alt_generate_title'] = sprintf(
-            '<button type="button" class="tl_submit bilder_alt_page_btn" onclick="seitenAiGenerateTitle(%d, this)">%s Titel generieren</button>',
-            $dc->id,
-            $aiIcon
-        );
+        if (BilderAltPermissions::canCreatePageTitle()) {
+            $buttons['bilder_alt_generate_title'] = sprintf(
+                '<button type="button" class="tl_submit bilder_alt_page_btn" onclick="seitenAiGenerateTitle(%d, this)">%s Titel generieren</button>',
+                $dc->id,
+                $aiIcon
+            );
+        }
 
-        $buttons['bilder_alt_generate_description'] = sprintf(
-            '<button type="button" class="tl_submit bilder_alt_page_btn" onclick="seitenAiGenerateDescription(%d, this)">%s Beschreibung generieren</button>',
-            $dc->id,
-            $aiIcon
-        );
+        if (BilderAltPermissions::canCreatePageDescription()) {
+            $buttons['bilder_alt_generate_description'] = sprintf(
+                '<button type="button" class="tl_submit bilder_alt_page_btn" onclick="seitenAiGenerateDescription(%d, this)">%s Beschreibung generieren</button>',
+                $dc->id,
+                $aiIcon
+            );
+        }
 
         return $buttons;
     }

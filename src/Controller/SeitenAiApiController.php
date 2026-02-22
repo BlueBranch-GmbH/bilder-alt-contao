@@ -3,6 +3,7 @@
 namespace Bluebranch\BilderAlt\Controller;
 
 use Bluebranch\BilderAlt\classes\BilderAlt;
+use Bluebranch\BilderAlt\Security\BilderAltPermissions;
 use Contao\Config;
 use Contao\CoreBundle\Framework\ContaoFramework;
 use Contao\Database;
@@ -34,6 +35,10 @@ class SeitenAiApiController extends AbstractController
     public function generateTitle(Request $request): JsonResponse
     {
         $this->framework->initialize();
+
+        if (!BilderAltPermissions::canCreatePageTitle()) {
+            return $this->buildError('Keine Berechtigung zum Generieren von Seitentiteln', Response::HTTP_FORBIDDEN);
+        }
 
         $pageId = (int) $request->request->get('pageId');
         $save   = (bool) $request->request->get('save', false);
@@ -81,6 +86,10 @@ class SeitenAiApiController extends AbstractController
     public function generateDescription(Request $request): JsonResponse
     {
         $this->framework->initialize();
+
+        if (!BilderAltPermissions::canCreatePageDescription()) {
+            return $this->buildError('Keine Berechtigung zum Generieren von Seitenbeschreibungen', Response::HTTP_FORBIDDEN);
+        }
 
         $pageId = (int) $request->request->get('pageId');
         $save   = (bool) $request->request->get('save', false);

@@ -3,6 +3,7 @@
 namespace Bluebranch\BilderAlt\Controller;
 
 use Bluebranch\BilderAlt\classes\BilderAlt;
+use Bluebranch\BilderAlt\Security\BilderAltPermissions;
 use Contao\Config;
 use Contao\CoreBundle\Controller\AbstractBackendController;
 use Contao\CoreBundle\Framework\ContaoFramework;
@@ -29,6 +30,10 @@ class SeitenAiBatchController extends AbstractBackendController
     public function __invoke(Request $request): Response
     {
         $this->framework->initialize();
+
+        if (!BilderAltPermissions::canCreatePageBatch()) {
+            throw $this->createAccessDeniedException('Keine Berechtigung zur Batch-Generierung von Seiten-SEO-Texten');
+        }
 
         $pages = $this->loadPages();
 

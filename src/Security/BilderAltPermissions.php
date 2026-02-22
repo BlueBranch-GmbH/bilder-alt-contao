@@ -14,7 +14,7 @@ class BilderAltPermissions
      */
     public static function canCreateSingle(): bool
     {
-        return self::hasPermission('create_single');
+        return self::hasPermission('create_single', 'bilder_alt');
     }
 
     /**
@@ -22,7 +22,7 @@ class BilderAltPermissions
      */
     public static function canCreateBatch(): bool
     {
-        return self::hasPermission('create_batch');
+        return self::hasPermission('create_batch', 'bilder_alt');
     }
 
     /**
@@ -30,13 +30,37 @@ class BilderAltPermissions
      */
     public static function canCreateAutoUpload(): bool
     {
-        return self::hasPermission('create_auto_upload');
+        return self::hasPermission('create_auto_upload', 'bilder_alt');
     }
 
     /**
-     * Helper method to check if user has a specific permission
+     * Check if the user has permission to generate a single page title
      */
-    private static function hasPermission(string $permission): bool
+    public static function canCreatePageTitle(): bool
+    {
+        return self::hasPermission('create_page_title', 'seiten_alt');
+    }
+
+    /**
+     * Check if the user has permission to generate a single page description
+     */
+    public static function canCreatePageDescription(): bool
+    {
+        return self::hasPermission('create_page_description', 'seiten_alt');
+    }
+
+    /**
+     * Check if the user has permission to batch-generate page SEO texts
+     */
+    public static function canCreatePageBatch(): bool
+    {
+        return self::hasPermission('create_page_batch', 'seiten_alt');
+    }
+
+    /**
+     * Helper method to check if user has a specific permission in a given field
+     */
+    private static function hasPermission(string $permission, string $field): bool
     {
         $user = BackendUser::getInstance();
 
@@ -57,8 +81,8 @@ class BilderAltPermissions
 
         // For users with 'extend' or 'custom' inherit mode, check their individual permissions
         if (isset($user->inherit) && in_array($user->inherit, ['extend', 'custom'])) {
-            if (isset($user->bilder_alt)) {
-                $userPermissions = StringUtil::deserialize($user->bilder_alt, true);
+            if (isset($user->$field)) {
+                $userPermissions = StringUtil::deserialize($user->$field, true);
                 if (in_array($permission, $userPermissions)) {
                     return true;
                 }
@@ -69,12 +93,12 @@ class BilderAltPermissions
         if (isset($user->inherit) && in_array($user->inherit, ['extend', 'group']) && isset($user->groups) && is_array($user->groups) && !empty($user->groups)) {
             $db = \Contao\Database::getInstance();
             $groups = $db->execute(
-                "SELECT bilder_alt FROM tl_user_group WHERE id IN(" .
+                "SELECT {$field} FROM tl_user_group WHERE id IN(" .
                 implode(',', array_map('intval', $user->groups)) . ")"
             );
 
             while ($groups->next()) {
-                $groupPermissions = StringUtil::deserialize($groups->bilder_alt, true);
+                $groupPermissions = StringUtil::deserialize($groups->$field, true);
                 if (in_array($permission, $groupPermissions)) {
                     return true;
                 }
