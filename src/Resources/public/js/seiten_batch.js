@@ -107,7 +107,7 @@ document.addEventListener('DOMContentLoaded', function () {
 
         try {
             if (pageItem.needsTitle) {
-                if (!updateCredits(2)) return;
+                if (!updateCredits(1)) return;
                 var fd1 = new FormData();
                 fd1.append('pageId', pageItem.id);
                 fd1.append('save', '1');
@@ -128,7 +128,7 @@ document.addEventListener('DOMContentLoaded', function () {
             }
 
             if (pageItem.needsDescription) {
-                if (!updateCredits(2)) return;
+                if (!updateCredits(1)) return;
                 var fd2 = new FormData();
                 fd2.append('pageId', pageItem.id);
                 fd2.append('save', '1');
