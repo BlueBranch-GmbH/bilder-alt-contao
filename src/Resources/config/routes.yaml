@@ -1,19 +1,45 @@
-bilder_alt_api:
-    resource: ../../Controller/BilderAltApiController.php
-    type: annotation
-    prefix: /
+bilder_alt_credits:
+    path: /contao/bilder-alt/api/v1/credits
+    controller: Bluebranch\BilderAlt\Controller\BilderAltApiController::getCredits
+    methods: [GET]
+    defaults:
+        _scope: backend
+        _token_check: false
 
-bilder_alt_controller:
-  resource: ../../Controller/BilderAltBatchController.php
-  type: annotation
-  prefix: /
+bilder_alt_generate_by_path:
+    path: /contao/bilder-alt/api/v1/generate/path
+    controller: Bluebranch\BilderAlt\Controller\BilderAltApiController::generateByPath
+    methods: [POST]
+    defaults:
+        _scope: backend
+        _token_check: false
 
-bilder_alt_seiten_api:
-  resource: ../../Controller/SeitenAiApiController.php
-  type: annotation
-  prefix: /
+bilder_alt_batch:
+    path: '%contao.backend.route_prefix%/bilder-alt/batch'
+    controller: Bluebranch\BilderAlt\Controller\BilderAltBatchController
+    defaults:
+        _scope: backend
+        _token_check: true
+
+bilder_alt_page_generate_title:
+    path: /contao/bilder-alt/api/v1/page/generate-title
+    controller: Bluebranch\BilderAlt\Controller\SeitenAiApiController::generateTitle
+    methods: [POST]
+    defaults:
+        _scope: backend
+        _token_check: false
+
+bilder_alt_page_generate_description:
+    path: /contao/bilder-alt/api/v1/page/generate-description
+    controller: Bluebranch\BilderAlt\Controller\SeitenAiApiController::generateDescription
+    methods: [POST]
+    defaults:
+        _scope: backend
+        _token_check: false
 
 bilder_alt_seiten_batch:
-  resource: ../../Controller/SeitenAiBatchController.php
-  type: annotation
-  prefix: /
+    path: '%contao.backend.route_prefix%/bilder-alt/seiten-batch'
+    controller: Bluebranch\BilderAlt\Controller\SeitenAiBatchController
+    defaults:
+        _scope: backend
+        _token_check: true
