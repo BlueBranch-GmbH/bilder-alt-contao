@@ -1,42 +1,58 @@
-document.addEventListener('DOMContentLoaded', () => {
-    const batchStartButton = document.getElementById('batch-start');
-    const batchStartWithNoneButton = document.getElementById('batch-start-with-none');
-    const batchStopButton = document.getElementById('batch-stop');
-    const progressContainer = document.getElementById('batch-progress-container');
-    const progressBar = document.getElementById('batch-progress-bar');
-    const progressText = document.getElementById('batch-progress-text');
-    const filesList = document.getElementById('batch-files-list');
-    const creditsCount = document.getElementById('credits-count');
-    let onlyNone = false;
+document.addEventListener('DOMContentLoaded', function () {
+    var batchStartButton = document.getElementById('batch-start');
+    var batchStartWithNoneButton = document.getElementById('batch-start-with-none');
+    var batchStopButton = document.getElementById('batch-stop');
+    var progressContainer = document.getElementById('batch-progress-container');
+    var progressBar = document.getElementById('batch-progress-bar');
+    var progressText = document.getElementById('batch-progress-text');
+    var filesList = document.getElementById('batch-files-list');
+    var creditsCount = document.getElementById('credits-count');
+    var onlyNone = false;
 
     if (!batchStartButton || !batchStartWithNoneButton || !filesList) {
         return;
     }
 
-    let filesQueue = [];
-    let processedCount = 0;
-    let totalFiles = 0;
-    let isProcessing = false;
-    let shouldStop = false;
-    let currentCredits = parseInt(creditsCount.textContent, 10) || 0;
+    var filesQueue = [];
+    var processedCount = 0;
+    var totalFiles = 0;
+    var totalCreditCost = 0;
+    var isProcessing = false;
+    var shouldStop = false;
+    var currentCredits = parseInt(creditsCount.textContent, 10) || 0;
+
+    function getCreditCost(el) {
+        if (onlyNone) {
+            var missing = el.dataset.missingLangs || '';
+            return missing ? missing.split(',').filter(Boolean).length : 0;
+        }
+        return el.querySelectorAll('.lang-row').length || 1;
+    }
 
     function collectFiles() {
-        filesQueue = [...document.querySelectorAll(`.file-item`)]
-            .map(el => ({element: el, path: el.dataset.path, processed: false}))
-            .filter(file => !!file.path)
-            .filter(file => onlyNone ? !parseInt(file.element.dataset.has) : true);
+        filesQueue = Array.prototype.slice.call(document.querySelectorAll('.file-item'))
+            .map(function (el) {
+                return { element: el, path: el.dataset.path, processed: false, creditCost: getCreditCost(el) };
+            })
+            .filter(function (file) { return !!file.path; })
+            .filter(function (file) {
+                if (!onlyNone) return true;
+                return file.creditCost > 0;
+            });
 
         totalFiles = filesQueue.length;
+        totalCreditCost = filesQueue.reduce(function (sum, f) { return sum + f.creditCost; }, 0);
         return totalFiles > 0;
     }
 
     function updateProgress() {
-        const percent = (processedCount / totalFiles) * 100;
-        progressBar.style.width = `${percent}%`;
-        progressText.textContent = `${processedCount}/${totalFiles} verarbeitet`;
+        var percent = (processedCount / totalFiles) * 100;
+        progressBar.style.width = percent + '%';
+        progressText.textContent = processedCount + '/' + totalFiles + ' verarbeitet';
     }
 
-    function updateCredits(used = 1) {
+    function updateCredits(used) {
+        used = used || 1;
         currentCredits = Math.max(0, currentCredits - used);
         creditsCount.textContent = currentCredits;
 
@@ -49,100 +65,117 @@ document.addEventListener('DOMContentLoaded', () => {
         return true;
     }
 
-    async function processApiRequest(fileItem) {
-        const formData = new FormData();
+    function processApiRequest(fileItem) {
+        var formData = new FormData();
         formData.append('path', fileItem.path);
         formData.append('contextUrl', window.location.hostname);
-        const res = await fetch('/contao/bilder-alt/api/v1/generate/path', {
-            method: 'POST', headers: {'X-Requested-With': 'XMLHttpRequest'}, body: formData
-        });
-        return await res.json();
+
+        if (onlyNone && fileItem.element.dataset.missingLangs) {
+            formData.append('languages', fileItem.element.dataset.missingLangs);
+        }
+
+        return fetch('/contao/bilder-alt/api/v1/generate/path', {
+            method: 'POST',
+            headers: { 'X-Requested-With': 'XMLHttpRequest' },
+            body: formData
+        }).then(function (res) { return res.json(); });
     }
 
     function updateStatusCell(fileItem, text, cssClass) {
-        const cell = fileItem.element.querySelector('.status');
+        var cell = fileItem.element.querySelector('.status');
         if (!cell) return;
         cell.textContent = text;
-        cell.className = `status ${cssClass}`;
+        cell.className = 'status ' + cssClass;
     }
 
-    function updateAltTextCell(fileItem, altTexts) {
-        if (!Array.isArray(altTexts) || !altTexts.length) {
-            return
-        }
-        const cell = fileItem.element.querySelector('.alt-text');
-        cell.innerHTML = ''
-        for (let text of altTexts) {
-            cell.innerHTML += `<p class="lang">${text}</p>`
-        }
-    }
+    function updateAltTextCell(fileItem, altData) {
+        if (!Array.isArray(altData) || !altData.length) return;
 
-    async function processFilePair(file1, file2 = null) {
-        if (shouldStop) {
-            return;
-        }
-        [file1, file2].filter(Boolean).forEach(file => updateStatusCell(file, 'Wird verarbeitet...', 'processing'));
-        try {
-            if (!updateCredits(1)) {
-                return;
+        var cell = fileItem.element.querySelector('.alt-text');
+        if (!cell) return;
+
+        altData.forEach(function (entry) {
+            if (!entry.isoCode || !entry.altTag) return;
+            var row = cell.querySelector('.lang-row[data-lang="' + entry.isoCode + '"]');
+            if (!row) return;
+            var span = row.querySelector('.lang-alt');
+            if (span) {
+                span.textContent = entry.altTag;
+                span.classList.remove('lang-alt--missing');
             }
+        });
 
-            const result1 = await processApiRequest(file1);
+        fileItem.element.dataset.missingLangs = '';
+        fileItem.element.dataset.has = '1';
+    }
+
+    function processFilePair(file1, file2) {
+        if (shouldStop) return Promise.resolve();
+
+        var files = [file1];
+        if (file2) files.push(file2);
+
+        files.forEach(function (f) { updateStatusCell(f, 'Wird verarbeitet...', 'processing'); });
+
+        if (!updateCredits(file1.creditCost)) return Promise.resolve();
+
+        return processApiRequest(file1).then(function (result1) {
             handleResult(file1, result1);
             processedCount++;
             updateProgress();
 
-            if (file2 && !shouldStop) {
-                if (!updateCredits(1)) {
-                    return;
-                }
-                const result2 = await processApiRequest(file2);
+            if (!file2 || shouldStop) return;
+
+            if (!updateCredits(file2.creditCost)) return;
+
+            return processApiRequest(file2).then(function (result2) {
                 handleResult(file2, result2);
                 processedCount++;
                 updateProgress();
-            }
-        } catch (err) {
-            console.error('[Bilder Alt] Fehler bei der Batch-Verarbeitung:', err);
-            [file1, file2].filter(Boolean).forEach(file => {
-                updateStatusCell(file, `Fehler: ${err.message || 'Unbekannter Fehler'}`, 'error');
             });
-        }
-
-        [file1, file2].filter(Boolean).forEach(file => {
-            file.processed = true;
+        }).catch(function (err) {
+            console.error('[Bilder Alt] Fehler bei der Batch-Verarbeitung:', err);
+            files.forEach(function (f) {
+                updateStatusCell(f, 'Fehler: ' + (err.message || 'Unbekannter Fehler'), 'error');
+            });
+        }).then(function () {
+            files.forEach(function (f) { f.processed = true; });
         });
     }
 
     function handleResult(file, data) {
-        if (data?.success && data?.data?.[0]?.altTag) {
-            const altText = data.data[0].altTag
-            showNotification(`[Bilder Alt] Alt-Text erfolgreich generiert "${altText}"`, 'success');
+        if (data && data.success && data.data && data.data[0] && data.data[0].altTag) {
+            showNotification('[Bilder Alt] Alt-Text erfolgreich generiert "' + data.data[0].altTag + '"', 'success');
         }
 
-        if (data?.success) {
+        if (data && data.success) {
             updateStatusCell(file, 'Erfolgreich', 'success');
-            updateAltTextCell(file, data.data.map(v => v.altTag))
-            file.element.dataset.has = '1';
+            updateAltTextCell(file, data.data);
         } else {
-            const msg = data?.data?.[0]?.message || data?.message || 'Fehler';
+            var msg = (data && data.data && data.data[0] && data.data[0].message)
+                || (data && data.message)
+                || 'Fehler';
             updateStatusCell(file, msg, 'error');
         }
     }
 
-    async function processQueue() {
+    function processQueue() {
         if (shouldStop || processedCount >= totalFiles) {
             return finishProcessing();
         }
 
-        const remaining = filesQueue.filter(f => !f.processed);
+        var remaining = filesQueue.filter(function (f) { return !f.processed; });
 
         if (!remaining.length) {
             return finishProcessing();
         }
 
-        const [file1, file2] = remaining;
-        await processFilePair(file1, file2);
-        setTimeout(processQueue, 600);
+        var file1 = remaining[0];
+        var file2 = remaining[1] || null;
+
+        processFilePair(file1, file2).then(function () {
+            setTimeout(processQueue, 600);
+        });
     }
 
     function startProcessing() {
@@ -150,8 +183,8 @@ document.addEventListener('DOMContentLoaded', () => {
             return showNotification('[Bilder Alt] Keine Dateien gefunden', 'error');
         }
 
-        if (currentCredits < filesQueue.length) {
-            return showNotification('[Bilder Alt] Keine Credits verfügbar', 'error');
+        if (currentCredits < totalCreditCost) {
+            return showNotification('[Bilder Alt] Nicht genug Credits verfügbar (' + totalCreditCost + ' benötigt, ' + currentCredits + ' vorhanden)', 'error');
         }
 
         shouldStop = false;
@@ -173,24 +206,29 @@ document.addEventListener('DOMContentLoaded', () => {
         batchStartWithNoneButton.style.display = 'inline-block';
         batchStopButton.style.display = 'none';
         progressContainer.style.opacity = '0';
-        const msg = shouldStop ? '[Bilder Alt] Verarbeitung wurde abgebrochen' : '[Bilder Alt] Alle Dateien wurden verarbeitet';
+        var msg = shouldStop
+            ? '[Bilder Alt] Verarbeitung wurde abgebrochen'
+            : '[Bilder Alt] Alle Dateien wurden verarbeitet';
         showNotification(msg, shouldStop ? 'info' : 'success');
     }
 
-    function showNotification(message, type = 'info') {
-        let container = document.getElementById('bilder-alt-notifications');
+    function showNotification(message, type) {
+        type = type || 'info';
+        var container = document.getElementById('bilder-alt-notifications');
 
         if (!container) {
             container = document.createElement('div');
             container.id = 'bilder-alt-notifications';
             Object.assign(container.style, {
-                position: 'fixed', zIndex: '9999', top: '10px', right: '10px', width: '300px', background: 'var(--body-bg, #fff)', display: 'flex', flexDirection: 'column', gap: '10px'
+                position: 'fixed', zIndex: '9999', top: '10px', right: '10px',
+                width: '300px', background: 'var(--body-bg, #fff)',
+                display: 'flex', flexDirection: 'column', gap: '10px'
             });
             document.body.appendChild(container);
         }
 
-        const div = document.createElement('div');
-        div.className = `tl_${type === 'error' ? 'error' : (type === 'success' ? 'confirm' : 'info')}`;
+        var div = document.createElement('div');
+        div.className = 'tl_' + (type === 'error' ? 'error' : (type === 'success' ? 'confirm' : 'info'));
         Object.assign(div.style, {
             padding: '10px 10px 10px 50px',
             borderRadius: '3px',
@@ -199,28 +237,30 @@ document.addEventListener('DOMContentLoaded', () => {
         div.innerHTML = message;
         container.appendChild(div);
 
-        setTimeout(() => {
+        setTimeout(function () {
             div.style.transition = 'opacity 0.5s';
             div.style.opacity = '0';
-            setTimeout(() => {
+            setTimeout(function () {
                 div.remove();
                 if (!container.children.length) container.remove();
             }, 500);
         }, 5000);
     }
 
-    batchStartButton.addEventListener('click', () => {
+    batchStartButton.addEventListener('click', function () {
         onlyNone = false;
-        startProcessing()
+        startProcessing();
     });
 
-    batchStartWithNoneButton.addEventListener('click', () => {
+    batchStartWithNoneButton.addEventListener('click', function () {
         onlyNone = true;
-        startProcessing()
+        startProcessing();
     });
 
-    batchStopButton?.addEventListener('click', () => {
-        shouldStop = true;
-        showNotification('[Bilder Alt] Verarbeitung wird angehalten...', 'info');
-    });
+    if (batchStopButton) {
+        batchStopButton.addEventListener('click', function () {
+            shouldStop = true;
+            showNotification('[Bilder Alt] Verarbeitung wird angehalten...', 'info');
+        });
+    }
 });

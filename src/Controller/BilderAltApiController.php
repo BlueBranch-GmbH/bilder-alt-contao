@@ -65,6 +65,14 @@ class BilderAltApiController extends AbstractController
             return $this->buildErrorResponse('[Bilder Alt] Keine Sprachen gefunden', Response::HTTP_NOT_FOUND);
         }
 
+        $requestedLangs = $request->request->get('languages', '');
+        if (!empty($requestedLangs)) {
+            $filter = array_filter(array_map('trim', explode(',', $requestedLangs)));
+            $languages = array_filter($languages, function ($code) use ($filter) {
+                return in_array($code, $filter, true);
+            }, ARRAY_FILTER_USE_KEY);
+        }
+
         if (!$this->isSupportedImage($filePath)) {
             return $this->buildErrorResponse('[Bilder Alt] Nicht unterstütztes Bildformat. Nur JPG, JPEG, PNG, GIF und WEBP werden unterstützt.');
         }
@@ -75,7 +83,7 @@ class BilderAltApiController extends AbstractController
         }
 
         $file = new File($absolutePath);
-        if (!str_starts_with($file->getMimeType(), 'image/')) {
+        if (strpos($file->getMimeType(), 'image/') !== 0) {
             return $this->buildErrorResponse('[Bilder Alt] Die angegebene Datei ist kein Bild');
         }
 
@@ -83,17 +91,20 @@ class BilderAltApiController extends AbstractController
             $keywords = $this->bilderAlt->getKeywords($filePath);
             $responses = [];
 
-            foreach ($languages as $language) {
-                $responses[] = $this->bilderAlt->sendToExternalApi(
+            foreach ($languages as $isoCode => $language) {
+                $response = $this->bilderAlt->sendToExternalApi(
                     $absolutePath,
                     $apiKey,
                     $language,
                     implode(',', $keywords),
-                    $contextUrl
+                    $contextUrl,
+                    $isoCode
                 );
+                $response['isoCode'] = $isoCode;
+                $responses[] = $response;
             }
 
-            $errors = array_filter($responses, fn($r) => !($r['success'] ?? false));
+            $errors = array_filter($responses, function ($r) { return !($r['success'] ?? false); });
 
             return $this->json([
                 'success' => count($errors) === 0,

@@ -73,31 +73,102 @@ class BilderAltBatchController extends AbstractBackendController
         return $imageModels;
     }
 
+    private static function getNotAvailableTexts(): array
+    {
+        return [
+            'de' => 'nicht vorhanden', 'de-DE' => 'nicht vorhanden', 'de-AT' => 'nicht vorhanden',
+            'de-CH' => 'nicht vorhanden', 'de_CH' => 'nicht vorhanden',
+            'en' => 'not available', 'en-US' => 'not available', 'en-GB' => 'not available',
+            'fr' => 'non disponible', 'fr-BE' => 'non disponible', 'fr-CH' => 'non disponible',
+            'fr-CA' => 'non disponible',
+            'es' => 'no disponible',
+            'it' => 'non disponibile',
+            'nl' => 'niet beschikbaar', 'nl-BE' => 'niet beschikbaar',
+            'pl' => 'niedostępny',
+            'pt' => 'não disponível', 'pt-BR' => 'não disponível',
+            'ru' => 'недоступно',
+            'zh' => '不可用', 'zh-CN' => '不可用', 'zh-TW' => '不可用',
+            'ja' => '利用不可',
+            'ko' => '사용 불가',
+            'ar' => 'غير متاح',
+            'hi' => 'उपलब्ध नहीं',
+            'tr' => 'mevcut değil',
+            'sv' => 'inte tillgänglig',
+            'da' => 'ikke tilgængelig',
+            'no' => 'ikke tilgjengelig', 'nb' => 'ikke tilgjengelig', 'nn' => 'ikkje tilgjengeleg',
+            'fi' => 'ei saatavilla',
+            'cs' => 'není k dispozici',
+            'hu' => 'nem elérhető',
+            'el' => 'μη διαθέσιμο',
+            'bg' => 'не е налично',
+            'ro' => 'indisponibil',
+            'uk' => 'недоступно',
+            'th' => 'ไม่มี',
+            'vi' => 'không có sẵn',
+            'id' => 'tidak tersedia',
+        ];
+    }
+
     public function __invoke(Request $request): Response
     {
         $this->framework->initialize();
 
         $selectedFiles = $request->getSession()->get('CURRENT')['IDS'] ?? [];
-
         $imageModels = $this->getImagesFromFiles($selectedFiles, Constants::ALLOWED_EXTENSIONS);
+        $languages = $this->bilderAlt->getAvailableLanguages();
+        $notAvailable = self::getNotAvailableTexts();
+        $excludedLanguages = Config::get('bilderAltExcludeLanguages')
+            ? StringUtil::deserialize(Config::get('bilderAltExcludeLanguages'), true)
+            : [];
 
-        $images = array_map(function ($model) {
-            $meta = [];
-            if (!empty($model->meta)) {
-                $meta = StringUtil::deserialize($model->meta);
+        $images = array_map(function ($model) use ($languages, $notAvailable, $excludedLanguages) {
+            $rawMeta = $model->meta;
+            $meta = (!empty($rawMeta) && is_string($rawMeta))
+                ? StringUtil::deserialize($rawMeta)
+                : [];
+            if (!is_array($meta)) {
+                $meta = [];
             }
 
-            $hasAlt = count($meta) > 0;
-            foreach ($meta as $value) {
-                if (empty($value['alt'])) {
-                    $hasAlt = false;
+            $langStatus = [];
+            $missingLangs = [];
+
+            // Configured languages first
+            foreach ($languages as $isoCode => $apiName) {
+                $alt = isset($meta[$isoCode]['alt']) ? $meta[$isoCode]['alt'] : '';
+                $base = explode('-', str_replace('_', '-', $isoCode))[0];
+                $langStatus[$isoCode] = [
+                    'code' => $isoCode,
+                    'alt' => $alt,
+                    'notAvailableText' => isset($notAvailable[$isoCode])
+                        ? $notAvailable[$isoCode]
+                        : (isset($notAvailable[$base]) ? $notAvailable[$base] : 'nicht vorhanden'),
+                ];
+                if (empty($alt)) {
+                    $missingLangs[] = $isoCode;
+                }
+            }
+
+            // Also show any stored language not in configured list (but respect exclusions)
+            foreach ($meta as $isoCode => $entry) {
+                if (!isset($langStatus[$isoCode]) && !empty($entry['alt']) && !in_array($isoCode, $excludedLanguages)) {
+                    $base = explode('-', str_replace('_', '-', $isoCode))[0];
+                    $langStatus[$isoCode] = [
+                        'code' => $isoCode,
+                        'alt' => $entry['alt'],
+                        'notAvailableText' => isset($notAvailable[$isoCode])
+                            ? $notAvailable[$isoCode]
+                            : (isset($notAvailable[$base]) ? $notAvailable[$base] : 'nicht vorhanden'),
+                    ];
                 }
             }
 
             return [
                 'model' => $model,
-                'meta' => is_array($meta) ? $meta : [],
-                'hasAlt' => $hasAlt
+                'meta' => $meta,
+                'langStatus' => array_values($langStatus),
+                'hasAlt' => empty($missingLangs) && !empty($langStatus),
+                'missingLangs' => $missingLangs,
             ];
         }, $imageModels);
 

@@ -52,13 +52,14 @@ class UploadListener
             $keywords = $bilderAlt->getKeywords($filePath);
             $errorResponses = [];
 
-            foreach ($languages as $language) {
+            foreach ($languages as $isoCode => $language) {
                 $response = $bilderAlt->sendToExternalApi(
                     $filePath,
                     $apiKey,
                     $language,
                     implode(',', $keywords),
-                    $contextUrl
+                    $contextUrl,
+                    $isoCode
                 );
 
                 if ($this->isFailedResponse($response)) {

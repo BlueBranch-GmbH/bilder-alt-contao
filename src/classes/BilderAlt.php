@@ -60,7 +60,11 @@ class BilderAlt
         $excludedLanguages = Config::get('bilderAltExcludeLanguages') ? StringUtil::deserialize(Config::get('bilderAltExcludeLanguages'), true) : [];
 
         if (class_exists(PageModel::class)) {
-            $roots = PageModel::findByType('root');
+            $roots = PageModel::findBy(
+                ['type=?', 'published=?'],
+                ['root', '1'],
+                ['order' => 'sorting ASC']
+            );
             if ($roots !== null) {
                 while ($roots->next()) {
                     if (!empty($roots->language) && !in_array($roots->language, $excludedLanguages)) {
@@ -85,7 +89,7 @@ class BilderAlt
         return $rootDir . '/' . $path;
     }
 
-    public function sendToExternalApi(string $imagePath, string $apiKey, string $language, string $keywords, string $contextUrl): array
+    public function sendToExternalApi(string $imagePath, string $apiKey, string $language, string $keywords, string $contextUrl, ?string $storageKey = null): array
     {
         try {
             $fields = [
@@ -116,7 +120,7 @@ class BilderAlt
             $json = json_decode($response->getContent(false), true);
 
             if ($statusCode >= 200 && $statusCode < 300 && !empty($json['altTag'])) {
-                $isoCode = $this->getIsoCodeFromLanguage($language);
+                $isoCode = $storageKey ?? $this->getIsoCodeFromLanguage($language);
                 $this->updateImageAltText($imagePath, $json['altTag'], $isoCode);
                 return array_merge(['success' => true, 'statusCode' => $statusCode], $json);
             }
@@ -295,7 +299,16 @@ class BilderAlt
             'in' => 'bahasa indonesia', 'ms' => 'malay', 'ms-BN' => 'bahasa melayu', 'ms-MY' => 'bahasa melayu',
         ];
 
-        return isset($map[$language]) ? $map[$language] : 'english';
+        // Normalisieren: Unterstrich → Bindestrich (Contao erlaubt beides, z.B. de_CH)
+        $normalized = str_replace('_', '-', $language);
+
+        if (isset($map[$normalized])) {
+            return $map[$normalized];
+        }
+
+        // Fallback: Basis-Sprachcode versuchen (z.B. 'de-AT' → 'de')
+        $base = explode('-', $normalized)[0];
+        return isset($map[$base]) ? $map[$base] : 'english';
     }
 
     public function getKeywords(string $filePath): array

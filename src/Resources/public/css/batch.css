@@ -100,3 +100,39 @@
 .batch-container {
     padding: 2rem;
 }
+
+.lang-row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 4px 0;
+    border-bottom: 1px solid var(--border, #eee);
+}
+
+.lang-row:last-child {
+    border-bottom: none;
+}
+
+.lang-label {
+    font-size: 10px;
+    font-weight: bold;
+    color: var(--text-muted, #666);
+    background: var(--panel-bg, #f0f0f0);
+    padding: 2px 5px;
+    border-radius: 2px;
+    min-width: 38px;
+    text-align: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    letter-spacing: 0.03em;
+}
+
+.lang-alt {
+    font-size: 13px;
+    line-height: 1.4;
+}
+
+.lang-alt--missing {
+    color: var(--text-muted, #aaa);
+    font-style: italic;
+}

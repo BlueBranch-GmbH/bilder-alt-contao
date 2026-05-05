@@ -44,7 +44,8 @@
                         <tr class="file-item"
                             data-path="{{ file.model.path|url_encode }}"
                             data-uuid="{{ file.model.uuid }}"
-                            data-has="{{ file.hasAlt ? 1 : 0 }}">
+                            data-has="{{ file.hasAlt ? 1 : 0 }}"
+                            data-missing-langs="{{ file.missingLangs|join(',') }}">
 
                             <td class="preview">
                                 {{ contao_figure(file.model.path, [100, 100, 'proportional']) }}
@@ -53,8 +54,15 @@
                             <td class="filename">{{ file.model.name }}</td>
 
                             <td class="alt-text">
-                                {% for meta in file.meta %}
-                                    <p>{{ meta.alt|default }}</p>
+                                {% for lang in file.langStatus %}
+                                    <div class="lang-row" data-lang="{{ lang.code }}">
+                                        <span class="lang-label">{{ lang.code|upper }}</span>
+                                        {% if lang.alt is not empty %}
+                                            <span class="lang-alt">{{ lang.alt }}</span>
+                                        {% else %}
+                                            <span class="lang-alt lang-alt--missing">{{ lang.notAvailableText }}</span>
+                                        {% endif %}
+                                    </div>
                                 {% endfor %}
                             </td>
 
