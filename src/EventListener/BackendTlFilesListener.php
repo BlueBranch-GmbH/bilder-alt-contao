@@ -2,6 +2,7 @@
 
 namespace Bluebranch\BilderAlt\EventListener;
 
+use Bluebranch\BilderAlt\classes\BilderAlt;
 use Bluebranch\BilderAlt\config\Constants;
 use Bluebranch\BilderAlt\Security\BilderAltPermissions;
 use Contao\Backend;
@@ -19,25 +20,21 @@ class BackendTlFilesListener extends Backend
     const IMAGE_AI = 'bundles/bilderalt/icons/ai.svg';
     const IMAGE_AI_NO_ALT = 'bundles/bilderalt/icons/ai-no-alt.svg';
 
-    /**
-     * @var RequestStack
-     */
-    private $requestStack;
-
-    /**
-     * @var ScopeMatcher
-     */
-    private $scopeMatcher;
+    private RequestStack $requestStack;
+    private ScopeMatcher $scopeMatcher;
+    private BilderAlt $bilderAlt;
 
     public function __construct(
         RequestStack $requestStack,
-        ScopeMatcher $scopeMatcher
+        ScopeMatcher $scopeMatcher,
+        BilderAlt $bilderAlt
     )
     {
         parent::__construct();
 
         $this->requestStack = $requestStack;
         $this->scopeMatcher = $scopeMatcher;
+        $this->bilderAlt = $bilderAlt;
     }
 
     /**
@@ -58,7 +55,7 @@ class BackendTlFilesListener extends Backend
                 'label' => ['Alt Text', 'Alt Text generieren'],
                 'href' => 'key=',
                 'icon' => self::IMAGE_AI,
-                'button_callback' => [self::class, 'renderButton'],
+                'button_callback' => [$this, 'renderButton'],
             ];
         }
 
@@ -80,7 +77,7 @@ class BackendTlFilesListener extends Backend
         }
     }
 
-    public static function renderButton(array $row, string $href, string $label, string $title, string $icon, string $attributes): string
+    public function renderButton(array $row, string $href, string $label, string $title, string $icon, string $attributes): string
     {
         if (empty($row['id'])) {
             return '';
@@ -92,25 +89,31 @@ class BackendTlFilesListener extends Backend
         }
 
         $model = FilesModel::findByPath(urldecode($row['id']));
-        $hasAltInAllLanguages = true;
+        $hasAltInAllLanguages = false;
 
         if ($model !== null) {
             $meta = StringUtil::deserialize($model->meta);
             if (is_array($meta)) {
-                if (empty($meta)) {
-                    $hasAltInAllLanguages = false;
-                }
-                foreach ($meta as $lang => $metaEntry) {
-                    if (empty($metaEntry['alt'])) {
-                        $hasAltInAllLanguages = false;
-                        break;
+                $availableLanguages = $this->bilderAlt->getAvailableLanguages();
+                if (!empty($availableLanguages)) {
+                    $hasAltInAllLanguages = true;
+                    foreach (array_keys($availableLanguages) as $lang) {
+                        if (empty($meta[$lang]['alt'])) {
+                            $hasAltInAllLanguages = false;
+                            break;
+                        }
+                    }
+                } else {
+                    // Fallback wenn keine Root-Seiten konfiguriert: meta-Einträge prüfen
+                    $hasAltInAllLanguages = !empty($meta);
+                    foreach ($meta as $metaEntry) {
+                        if (empty($metaEntry['alt'])) {
+                            $hasAltInAllLanguages = false;
+                            break;
+                        }
                     }
                 }
-            } else {
-                $hasAltInAllLanguages = false;
             }
-        } else {
-            $hasAltInAllLanguages = false;
         }
 
         if (!$hasAltInAllLanguages) {

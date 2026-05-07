@@ -25,8 +25,20 @@ async function generateImageTag($event, el) {
         const data = await response.json();
 
         if (data.success) {
-            const altText = data?.data?.[0]?.altTag || ''
-            showNotification(`Alt-Text erfolgreich generiert "${altText}"`, 'success');
+            const succeeded = (data?.data || []).filter(item => item.success !== false);
+            let message;
+            if (succeeded.length === 1) {
+                const altText = succeeded[0]?.altTag || '';
+                message = `Alt-Text erfolgreich generiert: &ldquo;${altText}&rdquo;`;
+            } else {
+                const lines = succeeded.map(item => {
+                    const lang = (item.isoCode || '').toUpperCase();
+                    const altText = item?.altTag || '';
+                    return `<b>${lang}:</b> &ldquo;${altText}&rdquo;`;
+                });
+                message = `Alt-Texte für folgende Sprachen generiert:<br>${lines.join('<br>')}`;
+            }
+            showNotification(message, 'success');
             updateElLink(el);
         } else if (data?.data?.length) {
             data?.data.forEach(item => {
