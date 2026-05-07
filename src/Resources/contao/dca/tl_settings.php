@@ -4,7 +4,7 @@ use Contao\PageModel;
 
 $GLOBALS['TL_DCA']['tl_settings']['palettes']['default'] = str_replace(
     '{files_legend',
-    '{bilder_alt_legend},bilderAltApiKey,bilderAltCredits,bilderAltAutoGenerate,bilderAltAddExistingAltTag,bilderAltKeywords,bilderAltExcludeLanguages;{files_legend',
+    '{bilder_alt_legend},bilderAltApiKey,bilderAltCredits,bilderAltAutoGenerate,bilderAltAddExistingAltTag,bilderAltKeywords,bilderAltMaxLength,bilderAltExcludeLanguages;{files_legend',
     $GLOBALS['TL_DCA']['tl_settings']['palettes']['default']
 );
 
@@ -56,6 +56,21 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltCredits'] = [
     ]
 ];
 
+$GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltMaxLength'] = [
+    'label' => &$GLOBALS['TL_LANG']['tl_settings']['bilderAltMaxLength'],
+    'inputType' => 'text',
+    'default' => 125,
+    'eval' => [
+        'mandatory' => false,
+        'tl_class' => 'w50',
+        'rgxp' => 'digit',
+        'maxlength' => 3,
+    ],
+    'save_callback' => [
+        ['SettingsCallbacks', 'validateMaxLength']
+    ]
+];
+
 $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltExcludeLanguages'] = [
     'label' => &$GLOBALS['TL_LANG']['tl_settings']['bilderAltExcludeLanguages'],
     'inputType' => 'checkboxWizard',
@@ -68,6 +83,15 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltExcludeLanguages'] = [
 
 class SettingsCallbacks
 {
+    public function validateMaxLength($value)
+    {
+        $value = (int) $value;
+        if ($value > 255) {
+            throw new \Exception($GLOBALS['TL_LANG']['tl_settings']['bilderAltMaxLengthError']);
+        }
+        return $value ?: 125;
+    }
+
     public function cleanKeywords($value)
     {
         $keywords = array_filter(array_map('trim', explode(',', $value ?? '')));

@@ -6,6 +6,8 @@ $GLOBALS['TL_LANG']['tl_settings']['bilderAltAutoGenerate'] = ['Automatically ge
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltAddExistingAltTag'] = ['Send existing alt texts', 'If active, existing alt texts are sent along as keywords to retain the context.'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltKeywords'] = ['Keywords', 'Enter a comma-separated list of keywords to be considered for SEO.'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltCredits'] = ['Available credits', 'Top up your credits: https://app.bilder-alt.de/'];
+$GLOBALS['TL_LANG']['tl_settings']['bilderAltMaxLength'] = ['Maximum alt text length', 'Maximum number of characters for the generated alt text (default: 125 characters, maximum: 255 characters).'];
+$GLOBALS['TL_LANG']['tl_settings']['bilderAltMaxLengthError'] = 'The maximum alt text length must not exceed 255 characters.';
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltExcludeLanguages'] = ['Exclude languages', 'No alt texts are generated for these excluded languages.'];
 
 // Error

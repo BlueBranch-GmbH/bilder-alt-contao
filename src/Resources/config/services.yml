@@ -23,6 +23,7 @@ services:
       arguments:
         - '@request_stack'
         - '@contao.routing.scope_matcher'
+        - '@Bluebranch\BilderAlt\classes\BilderAlt'
       tags:
         - { name: contao.hook, hook: 'loadDataContainer', method: '__invoke' }
 

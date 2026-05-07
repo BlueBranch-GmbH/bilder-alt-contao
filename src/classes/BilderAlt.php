@@ -105,6 +105,9 @@ class BilderAlt
                 $fields['contextUrl'] = $contextUrl;
             }
 
+            $maxLength = (int) (Config::get('bilderAltMaxLength') ?: 125);
+            $fields['maxLength'] = (string) $maxLength;
+
             $form = new FormDataPart($fields);
             $url = self::API_BASE_URL . '/api/v1/openai/upload-image';
 
