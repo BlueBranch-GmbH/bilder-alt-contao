@@ -2,7 +2,6 @@
 
 namespace Bluebranch\BilderAlt\classes;
 
-use Contao\BackendUser;
 use Contao\Config;
 use Contao\FilesModel;
 use Contao\PageModel;
@@ -16,8 +15,8 @@ class BilderAlt
 {
     private const API_BASE_URL = 'https://app.bilder-alt.de';
 
-    /** @var HttpClientInterface */
-    private $httpClient;
+    private HttpClientInterface $httpClient;
+    private ?array $availableLanguagesCache = null;
 
     public function __construct(HttpClientInterface $httpClient)
     {
@@ -53,11 +52,26 @@ class BilderAlt
         }
     }
 
+    public function getCreditsBalanceSafe(string $apiKey): int
+    {
+        try {
+            $response = $this->getCreditsBalance($apiKey);
+            return (int) ($response['credits'] ?? 0);
+        } catch (\Throwable $e) {
+            return 0;
+        }
+    }
+
     public function getAvailableLanguages(): array
     {
-        $languages = [];
+        if ($this->availableLanguagesCache !== null) {
+            return $this->availableLanguagesCache;
+        }
 
-        $excludedLanguages = Config::get('bilderAltExcludeLanguages') ? StringUtil::deserialize(Config::get('bilderAltExcludeLanguages'), true) : [];
+        $languages = [];
+        $excludedLanguages = Config::get('bilderAltExcludeLanguages')
+            ? StringUtil::deserialize(Config::get('bilderAltExcludeLanguages'), true)
+            : [];
 
         if (class_exists(PageModel::class)) {
             $roots = PageModel::findBy(
@@ -74,11 +88,7 @@ class BilderAlt
             }
         }
 
-        /*if (empty($languages)) {
-            $user = BackendUser::getInstance();
-            $languages[$user->language] = $this->getLanguage($user->language);
-        }*/
-
+        $this->availableLanguagesCache = $languages;
         return $languages;
     }
 
@@ -164,14 +174,10 @@ class BilderAlt
     {
         $meta = StringUtil::deserialize($metaData, true);
 
-        if (empty($meta)) {
-            $meta = [$language => ['title' => '', 'alt' => $altText]];
+        if (!isset($meta[$language])) {
+            $meta[$language] = ['title' => '', 'alt' => $altText];
         } else {
-            if (!isset($meta[$language])) {
-                $meta[$language] = ['title' => '', 'alt' => $altText];
-            } else {
-                $meta[$language]['alt'] = $altText;
-            }
+            $meta[$language]['alt'] = $altText;
         }
 
         return serialize($meta);
@@ -179,7 +185,84 @@ class BilderAlt
 
     protected function getIsoCodeFromLanguage(string $language): string
     {
-        $mapping = array_flip([
+        $mapping = array_flip($this->getBaseLanguageMap());
+        return $mapping[$language] ?? $language;
+    }
+
+    public function generatePageTitle(string $pageUrl, string $apiKey, string $language, string $keywords = ''): array
+    {
+        return $this->makePageRequest('title', $pageUrl, $apiKey, $language, $keywords);
+    }
+
+    public function generatePageDescription(string $pageUrl, string $apiKey, string $language, string $keywords = ''): array
+    {
+        return $this->makePageRequest('description', $pageUrl, $apiKey, $language, $keywords);
+    }
+
+    private function makePageRequest(string $type, string $pageUrl, string $apiKey, string $language, string $keywords = ''): array
+    {
+        try {
+            $body = ['url' => $pageUrl, 'language' => $language];
+            if (!empty($keywords)) {
+                $body['keywords'] = $keywords;
+            }
+
+            $response = $this->httpClient->request('POST', self::API_BASE_URL . '/api/v1/openai/generate-' . $type, [
+                'headers' => [
+                    'Accept' => 'application/json',
+                    'Content-Type' => 'application/json',
+                    'x-api-key' => $apiKey,
+                ],
+                'json' => $body,
+            ]);
+
+            $statusCode = $response->getStatusCode();
+            $json = json_decode($response->getContent(false), true);
+            $data = $json['data'] ?? $json;
+            $value = $data[$type] ?? null;
+
+            if ($statusCode >= 200 && $statusCode < 300 && $value) {
+                return ['success' => true, $type => $value, 'statusCode' => $statusCode];
+            }
+
+            return [
+                'success' => false,
+                'message' => $json['message'] ?? 'Fehler bei der Generierung',
+                'statusCode' => $statusCode,
+            ];
+        } catch (\Exception $e) {
+            return ['success' => false, 'message' => 'Exception: ' . $e->getMessage()];
+        }
+    }
+
+    public function getLanguage(string $language): string
+    {
+        $map = array_merge($this->getBaseLanguageMap(), [
+            'en-US' => 'english', 'en-GB' => 'english',
+            'de-DE' => 'german',
+            'pt-BR' => 'portuguese',
+            'zh-CN' => 'chinese', 'zh-TW' => 'chinese',
+            'nb' => 'norwegian', 'nn' => 'norwegian',
+            'in' => 'bahasa indonesia',
+            'ms' => 'malay', 'ms-BN' => 'bahasa melayu', 'ms-MY' => 'bahasa melayu',
+            'fr-BE' => 'french', 'fr-CH' => 'french', 'fr-CA' => 'french',
+            'nl-BE' => 'nederlands',
+        ]);
+
+        // Contao allows underscores (e.g. de_CH), normalise to hyphens
+        $normalized = str_replace('_', '-', $language);
+
+        if (isset($map[$normalized])) {
+            return $map[$normalized];
+        }
+
+        $base = explode('-', $normalized)[0];
+        return $map[$base] ?? 'english';
+    }
+
+    private function getBaseLanguageMap(): array
+    {
+        return [
             'en' => 'english',
             'de' => 'german',
             'fr' => 'french',
@@ -208,110 +291,7 @@ class BilderAlt
             'th' => 'thai',
             'vi' => 'vietnamese',
             'id' => 'indonesian',
-        ]);
-
-        return isset($mapping[$language]) ? $mapping[$language] : 'de';
-    }
-
-    public function generatePageTitle(string $pageUrl, string $apiKey, string $language, string $keywords = ''): array
-    {
-        try {
-            $body = ['url' => $pageUrl, 'language' => $language];
-            if (!empty($keywords)) {
-                $body['keywords'] = $keywords;
-            }
-
-            $response = $this->httpClient->request('POST', self::API_BASE_URL . '/api/v1/openai/generate-title', [
-                'headers' => [
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json',
-                    'x-api-key' => $apiKey,
-                ],
-                'json' => $body,
-            ]);
-
-            $statusCode = $response->getStatusCode();
-            $json = json_decode($response->getContent(false), true);
-            $data = $json['data'] ?? $json;
-            $title = $data['title'] ?? null;
-
-            if ($statusCode >= 200 && $statusCode < 300 && $title) {
-                return ['success' => true, 'title' => $title, 'statusCode' => $statusCode];
-            }
-
-            return [
-                'success' => false,
-                'message' => $json['message'] ?? 'Fehler bei der Generierung des Titels',
-                'statusCode' => $statusCode,
-            ];
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => 'Exception: ' . $e->getMessage()];
-        }
-    }
-
-    public function generatePageDescription(string $pageUrl, string $apiKey, string $language, string $keywords = ''): array
-    {
-        try {
-            $body = ['url' => $pageUrl, 'language' => $language];
-            if (!empty($keywords)) {
-                $body['keywords'] = $keywords;
-            }
-
-            $response = $this->httpClient->request('POST', self::API_BASE_URL . '/api/v1/openai/generate-description', [
-                'headers' => [
-                    'Accept' => 'application/json',
-                    'Content-Type' => 'application/json',
-                    'x-api-key' => $apiKey,
-                ],
-                'json' => $body,
-            ]);
-
-            $statusCode = $response->getStatusCode();
-            $json = json_decode($response->getContent(false), true);
-            $data = $json['data'] ?? $json;
-            $description = $data['description'] ?? null;
-
-            if ($statusCode >= 200 && $statusCode < 300 && $description) {
-                return ['success' => true, 'description' => $description, 'statusCode' => $statusCode];
-            }
-
-            return [
-                'success' => false,
-                'message' => $json['message'] ?? 'Fehler bei der Generierung der Beschreibung',
-                'statusCode' => $statusCode,
-            ];
-        } catch (\Exception $e) {
-            return ['success' => false, 'message' => 'Exception: ' . $e->getMessage()];
-        }
-    }
-
-    public function getLanguage(string $language): string
-    {
-        $map = [
-            'en' => 'english', 'en-US' => 'english', 'en-GB' => 'english',
-            'de' => 'german', 'de-DE' => 'german',
-            'fr' => 'french', 'es' => 'spanish', 'it' => 'italian',
-            'nl' => 'nederlands', 'pt' => 'portuguese', 'pt-BR' => 'portuguese',
-            'ru' => 'russian', 'zh' => 'chinese', 'zh-CN' => 'chinese', 'zh-TW' => 'chinese',
-            'ja' => 'japanese', 'ko' => 'korean', 'ar' => 'arabic', 'hi' => 'hindi',
-            'pl' => 'polish', 'tr' => 'turkish', 'sv' => 'swedish', 'da' => 'danish',
-            'no' => 'norwegian', 'nb' => 'norwegian', 'nn' => 'norwegian',
-            'fi' => 'finnish', 'cs' => 'czech', 'hu' => 'hungarian', 'el' => 'greek',
-            'bg' => 'bulgarian', 'ro' => 'romanian', 'uk' => 'ukrainian',
-            'th' => 'thai', 'vi' => 'vietnamese', 'id' => 'indonesian',
-            'in' => 'bahasa indonesia', 'ms' => 'malay', 'ms-BN' => 'bahasa melayu', 'ms-MY' => 'bahasa melayu',
         ];
-
-        // Normalisieren: Unterstrich → Bindestrich (Contao erlaubt beides, z.B. de_CH)
-        $normalized = str_replace('_', '-', $language);
-
-        if (isset($map[$normalized])) {
-            return $map[$normalized];
-        }
-
-        // Fallback: Basis-Sprachcode versuchen (z.B. 'de-AT' → 'de')
-        $base = explode('-', $normalized)[0];
-        return isset($map[$base]) ? $map[$base] : 'english';
     }
 
     public function getKeywords(string $filePath): array

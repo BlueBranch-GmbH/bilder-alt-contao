@@ -9,28 +9,16 @@ services:
         exclude: '../../../src/{Resources,DependencyInjection,Model,Tests,Migrations}'
 
     Bluebranch\BilderAlt\EventListener\UploadListener:
-        arguments:
-            - '@http_client'
         tags:
             - { name: contao.hook, hook: postUpload, method: '__invoke' }
 
     Bluebranch\BilderAlt\EventListener\TlSettingsCallback:
-        arguments:
-            - '@http_client'
         public: true
 
     Bluebranch\BilderAlt\EventListener\BackendTlFilesListener:
-      arguments:
-        - '@request_stack'
-        - '@contao.routing.scope_matcher'
-        - '@Bluebranch\BilderAlt\classes\BilderAlt'
       tags:
         - { name: contao.hook, hook: 'loadDataContainer', method: '__invoke' }
 
     Bluebranch\BilderAlt\EventListener\BackendTlPageListener:
-      arguments:
-        - '@request_stack'
-        - '@contao.routing.scope_matcher'
       tags:
         - { name: contao.hook, hook: 'loadDataContainer', method: '__invoke' }
-

@@ -4,15 +4,14 @@ namespace Bluebranch\BilderAlt\EventListener;
 
 use Bluebranch\BilderAlt\classes\BilderAlt;
 use Contao\Config;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 class TlSettingsCallback
 {
-    private HttpClientInterface $httpClient;
+    private BilderAlt $bilderAlt;
 
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(BilderAlt $bilderAlt)
     {
-        $this->httpClient = $httpClient;
+        $this->bilderAlt = $bilderAlt;
     }
 
     public function loadCredits($value)
@@ -24,8 +23,7 @@ class TlSettingsCallback
         }
 
         try {
-            $bilderAlt = new BilderAlt($this->httpClient);
-            $response = $bilderAlt->getCreditsBalance($apiKey);
+            $response = $this->bilderAlt->getCreditsBalance($apiKey);
 
             if ($response['success'] && isset($response['credits'])) {
                 return $response['credits'];

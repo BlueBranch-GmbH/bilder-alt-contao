@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
+    var QUEUE_DELAY_MS = 600;
+
     const btnTitle = document.getElementById('batch-generate-title');
     const btnDescription = document.getElementById('batch-generate-description');
     const btnBoth = document.getElementById('batch-generate-both');
@@ -106,49 +108,73 @@ document.addEventListener('DOMContentLoaded', function () {
         updateStatus(pageItem, 'Wird verarbeitet...', 'processing');
 
         try {
-            if (pageItem.needsTitle) {
-                if (!updateCredits(2)) return;
+            if (pageItem.needsTitle && pageItem.needsDescription) {
+                if (!updateCredits(4)) return;
+
                 var fd1 = new FormData();
                 fd1.append('pageId', pageItem.id);
                 fd1.append('save', '1');
-                var res1 = await fetch('/contao/bilder-alt/api/v1/page/generate-title', {
-                    method: 'POST',
-                    headers: {'X-Requested-With': 'XMLHttpRequest'},
-                    body: fd1,
-                });
-                var data1 = await res1.json();
-                if (data1.success) {
-                    updateCell(pageItem, 'pageTitle', data1.title);
-                } else {
-                    updateStatus(pageItem, data1.message || 'Fehler', 'error');
-                    processedCount++;
-                    updateProgress();
-                    return;
-                }
-            }
 
-            if (pageItem.needsDescription) {
-                if (!updateCredits(2)) return;
                 var fd2 = new FormData();
                 fd2.append('pageId', pageItem.id);
                 fd2.append('save', '1');
-                var res2 = await fetch('/contao/bilder-alt/api/v1/page/generate-description', {
+
+                var [res1, res2] = await Promise.all([
+                    fetch('/contao/bilder-alt/api/v1/page/generate-title', {
+                        method: 'POST',
+                        headers: {'X-Requested-With': 'XMLHttpRequest'},
+                        body: fd1,
+                    }).then(function (r) { return r.json(); }),
+                    fetch('/contao/bilder-alt/api/v1/page/generate-description', {
+                        method: 'POST',
+                        headers: {'X-Requested-With': 'XMLHttpRequest'},
+                        body: fd2,
+                    }).then(function (r) { return r.json(); }),
+                ]);
+
+                if (!res1.success) {
+                    updateStatus(pageItem, res1.message || 'Fehler', 'error');
+                } else if (!res2.success) {
+                    updateCell(pageItem, 'pageTitle', res1.title);
+                    updateStatus(pageItem, res2.message || 'Fehler', 'error');
+                } else {
+                    updateCell(pageItem, 'pageTitle', res1.title);
+                    updateCell(pageItem, 'description', res2.description);
+                    updateStatus(pageItem, 'Erfolgreich', 'success');
+                }
+            } else if (pageItem.needsTitle) {
+                if (!updateCredits(2)) return;
+                var fd = new FormData();
+                fd.append('pageId', pageItem.id);
+                fd.append('save', '1');
+                var data = await fetch('/contao/bilder-alt/api/v1/page/generate-title', {
                     method: 'POST',
                     headers: {'X-Requested-With': 'XMLHttpRequest'},
-                    body: fd2,
-                });
-                var data2 = await res2.json();
-                if (data2.success) {
-                    updateCell(pageItem, 'description', data2.description);
+                    body: fd,
+                }).then(function (r) { return r.json(); });
+                if (data.success) {
+                    updateCell(pageItem, 'pageTitle', data.title);
+                    updateStatus(pageItem, 'Erfolgreich', 'success');
                 } else {
-                    updateStatus(pageItem, data2.message || 'Fehler', 'error');
-                    processedCount++;
-                    updateProgress();
-                    return;
+                    updateStatus(pageItem, data.message || 'Fehler', 'error');
+                }
+            } else if (pageItem.needsDescription) {
+                if (!updateCredits(2)) return;
+                var fd = new FormData();
+                fd.append('pageId', pageItem.id);
+                fd.append('save', '1');
+                var data = await fetch('/contao/bilder-alt/api/v1/page/generate-description', {
+                    method: 'POST',
+                    headers: {'X-Requested-With': 'XMLHttpRequest'},
+                    body: fd,
+                }).then(function (r) { return r.json(); });
+                if (data.success) {
+                    updateCell(pageItem, 'description', data.description);
+                    updateStatus(pageItem, 'Erfolgreich', 'success');
+                } else {
+                    updateStatus(pageItem, data.message || 'Fehler', 'error');
                 }
             }
-
-            updateStatus(pageItem, 'Erfolgreich', 'success');
         } catch (err) {
             updateStatus(pageItem, 'Fehler: ' + (err.message || 'Unbekannter Fehler'), 'error');
         }
@@ -166,7 +192,7 @@ document.addEventListener('DOMContentLoaded', function () {
         if (!remaining.length) return finishProcessing();
 
         await processPage(remaining[0]);
-        setTimeout(processQueue, 600);
+        setTimeout(processQueue, QUEUE_DELAY_MS);
     }
 
     function startProcessing(selectedMode) {
@@ -204,38 +230,6 @@ document.addEventListener('DOMContentLoaded', function () {
             ? '[KI Seiten] Verarbeitung wurde abgebrochen.'
             : '[KI Seiten] Alle Seiten wurden verarbeitet.';
         showNotification(msg, shouldStop ? 'info' : 'success');
-    }
-
-    function showNotification(message, type) {
-        var container = document.getElementById('bilder-alt-notifications');
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'bilder-alt-notifications';
-            Object.assign(container.style, {
-                position: 'fixed',
-                zIndex: '9999',
-                top: '10px',
-                right: '10px',
-                width: '320px',
-                display: 'flex',
-                flexDirection: 'column',
-                gap: '10px',
-            });
-            document.body.appendChild(container);
-        }
-        var div = document.createElement('div');
-        div.className = 'tl_' + (type === 'error' ? 'error' : type === 'success' ? 'confirm' : 'info');
-        Object.assign(div.style, {padding: '10px 10px 10px 50px', borderRadius: '3px', boxShadow: '0 2px 5px rgba(0,0,0,0.2)'});
-        div.innerHTML = message;
-        container.appendChild(div);
-        setTimeout(function () {
-            div.style.transition = 'opacity 0.5s';
-            div.style.opacity = '0';
-            setTimeout(function () {
-                div.remove();
-                if (!container.children.length) container.remove();
-            }, 500);
-        }, 5000);
     }
 
     btnTitle.addEventListener('click', function () { startProcessing('title'); });

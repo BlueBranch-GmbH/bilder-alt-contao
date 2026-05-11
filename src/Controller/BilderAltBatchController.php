@@ -11,7 +11,6 @@ use Contao\FilesModel;
 use Contao\StringUtil;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -22,9 +21,9 @@ class BilderAltBatchController extends AbstractBackendController
     private BilderAlt $bilderAlt;
     private ContaoFramework $framework;
 
-    public function __construct(HttpClientInterface $httpClient, ContaoFramework $framework)
+    public function __construct(BilderAlt $bilderAlt, ContaoFramework $framework)
     {
-        $this->bilderAlt = new BilderAlt($httpClient);
+        $this->bilderAlt = $bilderAlt;
         $this->framework = $framework;
     }
 
@@ -109,6 +108,15 @@ class BilderAltBatchController extends AbstractBackendController
         ];
     }
 
+    private static function resolveNotAvailableText(array $map, string $isoCode): string
+    {
+        if (isset($map[$isoCode])) {
+            return $map[$isoCode];
+        }
+        $base = explode('-', str_replace('_', '-', $isoCode))[0];
+        return $map[$base] ?? 'nicht vorhanden';
+    }
+
     public function __invoke(Request $request): Response
     {
         $this->framework->initialize();
@@ -122,10 +130,7 @@ class BilderAltBatchController extends AbstractBackendController
             : [];
 
         $images = array_map(function ($model) use ($languages, $notAvailable, $excludedLanguages) {
-            $rawMeta = $model->meta;
-            $meta = (!empty($rawMeta) && is_string($rawMeta))
-                ? StringUtil::deserialize($rawMeta)
-                : [];
+            $meta = StringUtil::deserialize($model->meta, true);
             if (!is_array($meta)) {
                 $meta = [];
             }
@@ -133,32 +138,24 @@ class BilderAltBatchController extends AbstractBackendController
             $langStatus = [];
             $missingLangs = [];
 
-            // Configured languages first
             foreach ($languages as $isoCode => $apiName) {
-                $alt = isset($meta[$isoCode]['alt']) ? $meta[$isoCode]['alt'] : '';
-                $base = explode('-', str_replace('_', '-', $isoCode))[0];
+                $alt = $meta[$isoCode]['alt'] ?? '';
                 $langStatus[$isoCode] = [
                     'code' => $isoCode,
                     'alt' => $alt,
-                    'notAvailableText' => isset($notAvailable[$isoCode])
-                        ? $notAvailable[$isoCode]
-                        : (isset($notAvailable[$base]) ? $notAvailable[$base] : 'nicht vorhanden'),
+                    'notAvailableText' => self::resolveNotAvailableText($notAvailable, $isoCode),
                 ];
                 if (empty($alt)) {
                     $missingLangs[] = $isoCode;
                 }
             }
 
-            // Also show any stored language not in configured list (but respect exclusions)
             foreach ($meta as $isoCode => $entry) {
                 if (!isset($langStatus[$isoCode]) && !empty($entry['alt']) && !in_array($isoCode, $excludedLanguages)) {
-                    $base = explode('-', str_replace('_', '-', $isoCode))[0];
                     $langStatus[$isoCode] = [
                         'code' => $isoCode,
                         'alt' => $entry['alt'],
-                        'notAvailableText' => isset($notAvailable[$isoCode])
-                            ? $notAvailable[$isoCode]
-                            : (isset($notAvailable[$base]) ? $notAvailable[$base] : 'nicht vorhanden'),
+                        'notAvailableText' => self::resolveNotAvailableText($notAvailable, $isoCode),
                     ];
                 }
             }
@@ -173,27 +170,17 @@ class BilderAltBatchController extends AbstractBackendController
         }, $imageModels);
 
         $apiKey = Config::get('bilderAltApiKey');
-        $creditsInfo = ['credits' => 0];
-
-        if (!empty($apiKey)) {
-            try {
-                $credits = $this->bilderAlt->getCreditsBalance($apiKey);
-                if (!empty($credits['credits'])) {
-                    $creditsInfo['credits'] = $credits['credits'];
-                }
-            } catch (\Throwable $e) {
-                $creditsInfo['credits'] = 0;
-            }
-        }
+        $credits = !empty($apiKey) ? $this->bilderAlt->getCreditsBalanceSafe($apiKey) : 0;
 
         $GLOBALS['TL_CSS'][] = '/bundles/bilderalt/css/batch.css';
+        $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/bilderalt/js/notifications.js';
         $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/bilderalt/js/batch.js';
 
         return $this->render('@BilderAlt/Backend/bilder_alt_batch_index.html.twig', [
             'title' => 'SEO Alt Text Generator',
             'headline' => 'SEO Alt Text Generator',
             'imageFiles' => $images,
-            'credits' => $creditsInfo['credits'],
+            'credits' => $credits,
             'back_link' => '/contao/tl_files',
         ]);
     }

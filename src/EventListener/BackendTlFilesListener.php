@@ -12,11 +12,12 @@ use Contao\FilesModel;
 use Contao\Image;
 use Contao\Input;
 use Contao\StringUtil;
-use Contao\System;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class BackendTlFilesListener extends Backend
 {
+    use BackendScopeTrait;
+
     const IMAGE_AI = 'bundles/bilderalt/icons/ai.svg';
     const IMAGE_AI_NO_ALT = 'bundles/bilderalt/icons/ai-no-alt.svg';
 
@@ -37,9 +38,6 @@ class BackendTlFilesListener extends Backend
         $this->bilderAlt = $bilderAlt;
     }
 
-    /**
-     * Hook: ausgeführt beim Laden eines DCA
-     */
     public function __invoke(string $table): void
     {
         if ($table !== 'tl_files' || $this->isFrontend()) {
@@ -66,7 +64,7 @@ class BackendTlFilesListener extends Backend
                 Input::post('FORM_SUBMIT') === 'tl_select' &&
                 Input::post('bilder_alt_bulk') === 'getSelectedFiles'
             ) {
-                $session = System::getContainer()->get('request_stack')->getSession();
+                $session = $this->requestStack->getSession();
                 $session->set('CURRENT', ['IDS' => Input::post('IDS')]);
                 $selectedFiles = $session->get('CURRENT')['IDS'] ?? [];
 
@@ -104,7 +102,7 @@ class BackendTlFilesListener extends Backend
                         }
                     }
                 } else {
-                    // Fallback wenn keine Root-Seiten konfiguriert: meta-Einträge prüfen
+                    // Fallback when no root pages are configured: check any existing meta entries
                     $hasAltInAllLanguages = !empty($meta);
                     foreach ($meta as $metaEntry) {
                         if (empty($metaEntry['alt'])) {
@@ -126,16 +124,12 @@ class BackendTlFilesListener extends Backend
             '<a href="%s" title="%s" data-file-path="%s" onclick="generateImageTag(event, this)" class="bilder_alt_button %s">%s</a>',
             $href,
             StringUtil::specialchars($title),
-            //$attributes,
             $row['id'],
             $hasAltInAllLanguages ?: 'no-alt',
             Image::getHtml($icon, $label, 'style="width: 16px; height: 16px;"')
         );
     }
 
-    /**
-     * Mehrfachauswahl-Button unten ergänzen
-     */
     public function modifySelectButtons(array $buttons, DataContainer $dc): array
     {
         if ($dc->table !== 'tl_files') {
@@ -148,16 +142,5 @@ class BackendTlFilesListener extends Backend
         );
 
         return $buttons;
-    }
-
-    public function isFrontend(): bool
-    {
-        $request = $this->requestStack->getCurrentRequest();
-
-        if (null === $request) {
-            return false;
-        }
-
-        return $this->scopeMatcher->isFrontendRequest($request);
     }
 }

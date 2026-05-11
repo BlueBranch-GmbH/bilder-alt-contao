@@ -1,4 +1,6 @@
 document.addEventListener('DOMContentLoaded', function () {
+    var QUEUE_DELAY_MS = 600;
+
     var batchStartButton = document.getElementById('batch-start');
     var batchStartWithNoneButton = document.getElementById('batch-start-with-none');
     var batchStopButton = document.getElementById('batch-stop');
@@ -174,7 +176,7 @@ document.addEventListener('DOMContentLoaded', function () {
         var file2 = remaining[1] || null;
 
         processFilePair(file1, file2).then(function () {
-            setTimeout(processQueue, 600);
+            setTimeout(processQueue, QUEUE_DELAY_MS);
         });
     }
 
@@ -210,41 +212,6 @@ document.addEventListener('DOMContentLoaded', function () {
             ? '[Bilder Alt] Verarbeitung wurde abgebrochen'
             : '[Bilder Alt] Alle Dateien wurden verarbeitet';
         showNotification(msg, shouldStop ? 'info' : 'success');
-    }
-
-    function showNotification(message, type) {
-        type = type || 'info';
-        var container = document.getElementById('bilder-alt-notifications');
-
-        if (!container) {
-            container = document.createElement('div');
-            container.id = 'bilder-alt-notifications';
-            Object.assign(container.style, {
-                position: 'fixed', zIndex: '9999', top: '10px', right: '10px',
-                width: '300px', background: 'var(--body-bg, #fff)',
-                display: 'flex', flexDirection: 'column', gap: '10px'
-            });
-            document.body.appendChild(container);
-        }
-
-        var div = document.createElement('div');
-        div.className = 'tl_' + (type === 'error' ? 'error' : (type === 'success' ? 'confirm' : 'info'));
-        Object.assign(div.style, {
-            padding: '10px 10px 10px 50px',
-            borderRadius: '3px',
-            boxShadow: '0 2px 5px rgba(0,0,0,0.2)'
-        });
-        div.innerHTML = message;
-        container.appendChild(div);
-
-        setTimeout(function () {
-            div.style.transition = 'opacity 0.5s';
-            div.style.opacity = '0';
-            setTimeout(function () {
-                div.remove();
-                if (!container.children.length) container.remove();
-            }, 500);
-        }, 5000);
     }
 
     batchStartButton.addEventListener('click', function () {

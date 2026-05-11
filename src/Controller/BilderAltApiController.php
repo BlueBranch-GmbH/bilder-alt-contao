@@ -11,7 +11,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @Route("/contao/bilder-alt/api/v1", defaults={"_scope" = "backend", "_token_check" = false})
@@ -20,9 +19,9 @@ class BilderAltApiController extends AbstractController
 {
     private BilderAlt $bilderAlt;
 
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(BilderAlt $bilderAlt)
     {
-        $this->bilderAlt = new BilderAlt($httpClient);
+        $this->bilderAlt = $bilderAlt;
     }
 
     /**
@@ -83,7 +82,7 @@ class BilderAltApiController extends AbstractController
         }
 
         $file = new File($absolutePath);
-        if (strpos($file->getMimeType(), 'image/') !== 0) {
+        if (!str_starts_with($file->getMimeType(), 'image/')) {
             return $this->buildErrorResponse('[Bilder Alt] Die angegebene Datei ist kein Bild');
         }
 
@@ -114,10 +113,6 @@ class BilderAltApiController extends AbstractController
             return $this->buildErrorResponse('[Bilder Alt] Fehler bei der Verarbeitung: ' . $e->getMessage());
         }
     }
-
-    // -----------------------------------------
-    // Hilfsfunktionen
-    // -----------------------------------------
 
     private function getApiKey(): ?string
     {

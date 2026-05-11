@@ -13,7 +13,6 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @Route("/contao/bilder-alt/api/v1/page", defaults={"_scope" = "backend", "_token_check" = false})
@@ -23,9 +22,9 @@ class SeitenAiApiController extends AbstractController
     private BilderAlt $bilderAlt;
     private ContaoFramework $framework;
 
-    public function __construct(HttpClientInterface $httpClient, ContaoFramework $framework)
+    public function __construct(BilderAlt $bilderAlt, ContaoFramework $framework)
     {
-        $this->bilderAlt = new BilderAlt($httpClient);
+        $this->bilderAlt = $bilderAlt;
         $this->framework = $framework;
     }
 
@@ -40,41 +39,17 @@ class SeitenAiApiController extends AbstractController
             return $this->buildError('Keine Berechtigung zum Generieren von Seitentiteln', Response::HTTP_FORBIDDEN);
         }
 
-        $pageId = (int) $request->request->get('pageId');
-        $save   = (bool) $request->request->get('save', false);
-
-        if (!$pageId) {
-            return $this->buildError('Keine Seiten-ID angegeben', Response::HTTP_BAD_REQUEST);
+        $context = $this->loadPage($request);
+        if ($context instanceof JsonResponse) {
+            return $context;
         }
 
-        $apiKey = Config::get('bilderAltApiKey') ?: null;
-        if (!$apiKey) {
-            return $this->buildError('Kein API-Key konfiguriert', Response::HTTP_UNAUTHORIZED);
-        }
+        $result = $this->bilderAlt->generatePageTitle($context['pageUrl'], $context['apiKey'], $context['language'], $context['keywords']);
 
-        $page = PageModel::findByPk($pageId);
-        if (!$page) {
-            return $this->buildError('Seite nicht gefunden', Response::HTTP_NOT_FOUND);
-        }
-
-        if (!$page->published) {
-            return $this->buildError(
-                'Die Seite "' . $page->title . '" ist nicht veröffentlicht. Bitte veröffentliche die Seite zuerst, damit die KI den Inhalt abrufen kann.',
-                Response::HTTP_UNPROCESSABLE_ENTITY
-            );
-        }
-
-        $page->loadDetails();
-        $pageUrl  = $page->getAbsoluteUrl();
-        $language = $this->bilderAlt->getLanguage($page->rootLanguage ?? 'de');
-        $keywords = Config::get('bilderAltKeywords') ?? '';
-
-        $result = $this->bilderAlt->generatePageTitle($pageUrl, $apiKey, $language, $keywords);
-
-        if ($result['success'] && $save) {
+        if ($result['success'] && $context['save']) {
             Database::getInstance()
                 ->prepare('UPDATE tl_page SET pageTitle=?, tstamp=? WHERE id=?')
-                ->execute($result['title'], time(), $pageId);
+                ->execute($result['title'], time(), $context['pageId']);
         }
 
         return $this->json($result);
@@ -91,6 +66,24 @@ class SeitenAiApiController extends AbstractController
             return $this->buildError('Keine Berechtigung zum Generieren von Seitenbeschreibungen', Response::HTTP_FORBIDDEN);
         }
 
+        $context = $this->loadPage($request);
+        if ($context instanceof JsonResponse) {
+            return $context;
+        }
+
+        $result = $this->bilderAlt->generatePageDescription($context['pageUrl'], $context['apiKey'], $context['language'], $context['keywords']);
+
+        if ($result['success'] && $context['save']) {
+            Database::getInstance()
+                ->prepare('UPDATE tl_page SET description=?, tstamp=? WHERE id=?')
+                ->execute($result['description'], time(), $context['pageId']);
+        }
+
+        return $this->json($result);
+    }
+
+    private function loadPage(Request $request): array|JsonResponse
+    {
         $pageId = (int) $request->request->get('pageId');
         $save   = (bool) $request->request->get('save', false);
 
@@ -116,19 +109,15 @@ class SeitenAiApiController extends AbstractController
         }
 
         $page->loadDetails();
-        $pageUrl  = $page->getAbsoluteUrl();
-        $language = $this->bilderAlt->getLanguage($page->rootLanguage ?? 'de');
-        $keywords = Config::get('bilderAltKeywords') ?? '';
 
-        $result = $this->bilderAlt->generatePageDescription($pageUrl, $apiKey, $language, $keywords);
-
-        if ($result['success'] && $save) {
-            Database::getInstance()
-                ->prepare('UPDATE tl_page SET description=?, tstamp=? WHERE id=?')
-                ->execute($result['description'], time(), $pageId);
-        }
-
-        return $this->json($result);
+        return [
+            'pageId'   => $pageId,
+            'save'     => $save,
+            'apiKey'   => $apiKey,
+            'pageUrl'  => $page->getAbsoluteUrl(),
+            'language' => $this->bilderAlt->getLanguage($page->rootLanguage ?? 'de'),
+            'keywords' => Config::get('bilderAltKeywords') ?? '',
+        ];
     }
 
     private function buildError(string $message, int $status = Response::HTTP_INTERNAL_SERVER_ERROR): JsonResponse

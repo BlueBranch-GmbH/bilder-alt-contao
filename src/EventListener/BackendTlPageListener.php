@@ -9,11 +9,12 @@ use Contao\DataContainer;
 use Contao\Image;
 use Contao\Input;
 use Contao\StringUtil;
-use Contao\System;
 use Symfony\Component\HttpFoundation\RequestStack;
 
 class BackendTlPageListener extends Backend
 {
+    use BackendScopeTrait;
+
     private RequestStack $requestStack;
     private ScopeMatcher $scopeMatcher;
 
@@ -81,15 +82,5 @@ class BackendTlPageListener extends Backend
             $aiIcon,
             $label
         );
-    }
-
-    public function isFrontend(): bool
-    {
-        $request = $this->requestStack->getCurrentRequest();
-        if (null === $request) {
-            return false;
-        }
-
-        return $this->scopeMatcher->isFrontendRequest($request);
     }
 }

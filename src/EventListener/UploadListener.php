@@ -8,17 +8,18 @@ use Bluebranch\BilderAlt\Security\BilderAltPermissions;
 use Contao\Config;
 use Contao\System;
 use Symfony\Component\HttpFoundation\File\File;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
+use Symfony\Component\HttpFoundation\RequestStack;
 
 class UploadListener
 {
-    /** @var HttpClientInterface */
-    private $httpClient;
+    private BilderAlt $bilderAlt;
+    private RequestStack $requestStack;
 
-    public function __construct(HttpClientInterface $httpClient)
+    public function __construct(BilderAlt $bilderAlt, RequestStack $requestStack)
     {
         System::loadLanguageFile('tl_settings');
-        $this->httpClient = $httpClient;
+        $this->bilderAlt = $bilderAlt;
+        $this->requestStack = $requestStack;
     }
 
     public function __invoke(array $files): void
@@ -33,9 +34,8 @@ class UploadListener
             return;
         }
 
-        $contextUrl = $_SERVER['HTTP_HOST'] ?? '';
-        $bilderAlt = new BilderAlt($this->httpClient);
-        $languages = $bilderAlt->getAvailableLanguages();
+        $contextUrl = $this->requestStack->getCurrentRequest()?->getHost() ?? '';
+        $languages = $this->bilderAlt->getAvailableLanguages();
 
         foreach ($files as $rawPath) {
             $filePath = urldecode($rawPath);
@@ -44,16 +44,16 @@ class UploadListener
                 continue;
             }
 
-            $absolutePath = $bilderAlt->getAbsolutePathFromRelative($filePath);
+            $absolutePath = $this->bilderAlt->getAbsolutePathFromRelative($filePath);
             if (!$absolutePath || !file_exists($absolutePath)) {
                 continue;
             }
 
-            $keywords = $bilderAlt->getKeywords($filePath);
+            $keywords = $this->bilderAlt->getKeywords($filePath);
             $errorResponses = [];
 
             foreach ($languages as $isoCode => $language) {
-                $response = $bilderAlt->sendToExternalApi(
+                $response = $this->bilderAlt->sendToExternalApi(
                     $filePath,
                     $apiKey,
                     $language,
@@ -66,7 +66,7 @@ class UploadListener
                     $errorResponses[] = $response;
                 }
 
-                // Break early on 402 – keine weiteren Versuche
+                // Break early on 402 – no further attempts
                 if (!empty($response['statusCode']) && (int)$response['statusCode'] === 402) {
                     break;
                 }
@@ -88,7 +88,7 @@ class UploadListener
 
         try {
             $file = new File($path);
-            return strpos($file->getMimeType(), 'image/') === 0;
+            return str_starts_with($file->getMimeType(), 'image/');
         } catch (\Exception $e) {
             return false;
         }

@@ -11,7 +11,6 @@ use Contao\PageModel;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Contracts\HttpClient\HttpClientInterface;
 
 /**
  * @Route("%contao.backend.route_prefix%/bilder-alt/seiten-batch", name=self::class, defaults={"_scope" = "backend", "_token_check" = true})
@@ -21,9 +20,9 @@ class SeitenAiBatchController extends AbstractBackendController
     private BilderAlt $bilderAlt;
     private ContaoFramework $framework;
 
-    public function __construct(HttpClientInterface $httpClient, ContaoFramework $framework)
+    public function __construct(BilderAlt $bilderAlt, ContaoFramework $framework)
     {
-        $this->bilderAlt = new BilderAlt($httpClient);
+        $this->bilderAlt = $bilderAlt;
         $this->framework = $framework;
     }
 
@@ -38,28 +37,18 @@ class SeitenAiBatchController extends AbstractBackendController
         $pages = $this->loadPages();
 
         $apiKey = Config::get('bilderAltApiKey');
-        $creditsInfo = ['credits' => 0];
-
-        if (!empty($apiKey)) {
-            try {
-                $credits = $this->bilderAlt->getCreditsBalance($apiKey);
-                if (!empty($credits['credits'])) {
-                    $creditsInfo['credits'] = $credits['credits'];
-                }
-            } catch (\Throwable $e) {
-                $creditsInfo['credits'] = 0;
-            }
-        }
+        $credits = !empty($apiKey) ? $this->bilderAlt->getCreditsBalanceSafe($apiKey) : 0;
 
         $GLOBALS['TL_CSS'][] = '/bundles/bilderalt/css/batch.css';
         $GLOBALS['TL_CSS'][] = '/bundles/bilderalt/css/seiten_batch.css';
+        $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/bilderalt/js/notifications.js';
         $GLOBALS['TL_JAVASCRIPT'][] = 'bundles/bilderalt/js/seiten_batch.js';
 
         return $this->render('@BilderAlt/Backend/seiten_ai_batch_index.html.twig', [
             'title' => 'KI SEO-Texte Generator',
             'headline' => 'KI SEO-Texte Generator',
             'pages' => $pages,
-            'credits' => $creditsInfo['credits'],
+            'credits' => $credits,
         ]);
     }
 
