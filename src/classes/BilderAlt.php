@@ -74,10 +74,11 @@ class BilderAlt
             : [];
 
         if (class_exists(PageModel::class)) {
+            $t = PageModel::getTable();
             $roots = PageModel::findBy(
-                ['type=?', 'published=?'],
+                ["$t.type=?", "$t.published=?"],
                 ['root', '1'],
-                ['order' => 'sorting ASC']
+                ['order' => "$t.sorting ASC"]
             );
             if ($roots !== null) {
                 while ($roots->next()) {
