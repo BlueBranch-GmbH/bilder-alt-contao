@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+function pageBatch() {
     var QUEUE_DELAY_MS = 600;
 
     const btnTitle = document.getElementById('batch-generate-title');
@@ -242,4 +242,7 @@ document.addEventListener('DOMContentLoaded', function () {
         shouldStop = true;
         showNotification('[KI Seiten] Verarbeitung wird angehalten...', 'info');
     });
-});
+}
+
+document.addEventListener('DOMContentLoaded', pageBatch);
+document.documentElement.addEventListener('turbo:render', pageBatch);
