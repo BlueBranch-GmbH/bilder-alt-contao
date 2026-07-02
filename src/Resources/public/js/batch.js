@@ -1,4 +1,4 @@
-document.addEventListener('DOMContentLoaded', function () {
+function batch() {
     var QUEUE_DELAY_MS = 600;
 
     var batchStartButton = document.getElementById('batch-start');
@@ -230,4 +230,7 @@ document.addEventListener('DOMContentLoaded', function () {
             showNotification('[Bilder Alt] Verarbeitung wird angehalten...', 'info');
         });
     }
-});
+}
+
+document.addEventListener('DOMContentLoaded', batch);
+document.documentElement.addEventListener('turbo:render', batch);
