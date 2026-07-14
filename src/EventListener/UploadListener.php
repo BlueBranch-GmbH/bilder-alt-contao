@@ -49,10 +49,10 @@ class UploadListener
                 continue;
             }
 
-            $keywords = $this->bilderAlt->getKeywords($filePath);
             $errorResponses = [];
 
             foreach ($languages as $isoCode => $language) {
+                $keywords = $this->bilderAlt->getKeywords($filePath, $isoCode);
                 $response = $this->bilderAlt->sendToExternalApi(
                     $filePath,
                     $apiKey,

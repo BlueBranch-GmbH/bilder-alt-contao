@@ -295,14 +295,14 @@ class BilderAlt
         ];
     }
 
-    public function getKeywords(string $filePath): array
+    public function getKeywords(string $filePath, string $isoCode): array
     {
         $keywords = explode(',', Config::get('bilderAltKeywords') ?? '');
         $fileModel = FilesModel::findByPath($filePath);
 
         $sendExistingAltText = Config::get('bilderAltAddExistingAltTag');
         if ($fileModel && $sendExistingAltText === true) {
-            if ($alt = $this->getAltTextFromMeta($fileModel->meta)) {
+            if ($alt = $this->getAltTextFromMeta($fileModel->meta, $isoCode)) {
                 array_unshift($keywords, $alt);
             }
         }
@@ -310,14 +310,13 @@ class BilderAlt
         return array_filter(array_map('trim', $keywords));
     }
 
-    private function getAltTextFromMeta($meta): ?string
+    private function getAltTextFromMeta($meta, string $isoCode): ?string
     {
         $metaArray = StringUtil::deserialize($meta, true);
         if (empty($metaArray)) {
             return null;
         }
 
-        $firstLang = array_key_first($metaArray);
-        return $metaArray[$firstLang]['alt'] ?? null;
+        return $metaArray[$isoCode]['alt'] ?? null;
     }
 }
