@@ -4,7 +4,7 @@ use Contao\PageModel;
 
 $GLOBALS['TL_DCA']['tl_settings']['palettes']['default'] = str_replace(
     '{files_legend',
-    '{bilder_alt_legend},bilderAltApiKey,bilderAltCredits,bilderAltAutoGenerate,bilderAltAddExistingAltTag,bilderAltKeywords,bilderAltMaxLength,bilderAltExcludeLanguages;{files_legend',
+    '{bilder_alt_legend},bilderAltApiKey,bilderAltCredits,bilderAltAutoGenerate,bilderAltAddExistingAltTag,bilderAltKeywords,bilderAltMaxLength,bilderAltExcludeLanguages,bilderAltAltPrefix,bilderAltAltSuffix;{files_legend',
     $GLOBALS['TL_DCA']['tl_settings']['palettes']['default']
 );
 
@@ -81,6 +81,32 @@ $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltExcludeLanguages'] = [
     ]
 ];
 
+$GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltAltPrefix'] = [
+    'label' => &$GLOBALS['TL_LANG']['tl_settings']['bilderAltAltPrefix'],
+    'inputType' => 'text',
+    'eval' => [
+        'mandatory' => false,
+        'tl_class' => 'clr w50',
+        'maxlength' => 50,
+    ],
+    'save_callback' => [
+        ['SettingsCallbacks', 'validateAltAffix']
+    ]
+];
+
+$GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltAltSuffix'] = [
+    'label' => &$GLOBALS['TL_LANG']['tl_settings']['bilderAltAltSuffix'],
+    'inputType' => 'text',
+    'eval' => [
+        'mandatory' => false,
+        'tl_class' => 'w50',
+        'maxlength' => 50,
+    ],
+    'save_callback' => [
+        ['SettingsCallbacks', 'validateAltAffix']
+    ]
+];
+
 class SettingsCallbacks
 {
     public function validateMaxLength($value)
@@ -90,6 +116,11 @@ class SettingsCallbacks
             throw new \Exception($GLOBALS['TL_LANG']['tl_settings']['bilderAltMaxLengthError']);
         }
         return $value ?: 125;
+    }
+
+    public function validateAltAffix($value)
+    {
+        return trim((string) $value);
     }
 
     public function cleanKeywords($value)

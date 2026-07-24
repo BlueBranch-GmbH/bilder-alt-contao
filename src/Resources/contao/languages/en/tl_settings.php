@@ -8,6 +8,8 @@ $GLOBALS['TL_LANG']['tl_settings']['bilderAltKeywords'] = ['Keywords', 'Enter a 
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltCredits'] = ['Available credits', 'Top up your credits: https://app.bilder-alt.de/'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltMaxLength'] = ['Maximum alt text length', 'Maximum number of characters for the generated alt text (default: 125 characters, maximum: 255 characters).'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltMaxLengthError'] = 'The maximum alt text length must not exceed 255 characters.';
+$GLOBALS['TL_LANG']['tl_settings']['bilderAltAltPrefix'] = ['Alt text prefix', 'Prepended to the generated alt text (separated by a space) once it has been generated successfully. Never sent to the AI. Can be left empty.'];
+$GLOBALS['TL_LANG']['tl_settings']['bilderAltAltSuffix'] = ['Alt text suffix', 'Appended to the generated alt text (separated by a space) once it has been generated successfully. Never sent to the AI. Can be left empty.'];
 $GLOBALS['TL_LANG']['tl_settings']['bilderAltExcludeLanguages'] = ['Exclude languages', 'No alt texts are generated for these excluded languages.'];
 
 // Error

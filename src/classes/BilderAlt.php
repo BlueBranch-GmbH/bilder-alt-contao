@@ -134,9 +134,11 @@ class BilderAlt
             $json = json_decode($response->getContent(false), true);
 
             if ($statusCode >= 200 && $statusCode < 300 && !empty($json['altTag'])) {
+                $rawAltTag = $json['altTag'];
+                $altTag = $this->applyAltAffixes($rawAltTag);
                 $isoCode = $storageKey ?? $this->getIsoCodeFromLanguage($language);
-                $this->updateImageAltText($imagePath, $json['altTag'], $isoCode);
-                return array_merge(['success' => true, 'statusCode' => $statusCode], $json);
+                $this->updateImageAltText($imagePath, $altTag, $isoCode, $rawAltTag);
+                return array_merge(['success' => true, 'statusCode' => $statusCode], $json, ['altTag' => $altTag]);
             }
 
             return array_merge(['success' => false, 'statusCode' => $statusCode], $json ?: [
@@ -147,7 +149,23 @@ class BilderAlt
         }
     }
 
-    public function updateImageAltText(string $path, string $altText, ?string $language = null): void
+    private function applyAltAffixes(string $altTag): string
+    {
+        $prefix = (string) (Config::get('bilderAltAltPrefix') ?? '');
+        $suffix = (string) (Config::get('bilderAltAltSuffix') ?? '');
+
+        if ($prefix !== '') {
+            $prefix .= ' ';
+        }
+
+        if ($suffix !== '') {
+            $suffix = ' ' . $suffix;
+        }
+
+        return $prefix . $altTag . $suffix;
+    }
+
+    public function updateImageAltText(string $path, string $altText, ?string $language = null, ?string $rawAltText = null): void
     {
         if (empty($path)) {
             return;
@@ -158,7 +176,7 @@ class BilderAlt
             return;
         }
 
-        $fileModel->meta = $this->updateMetaInformation($fileModel->meta, $altText, $language ?? 'de');
+        $fileModel->meta = $this->updateMetaInformation($fileModel->meta, $altText, $language ?? 'de', $rawAltText);
         $fileModel->save();
     }
 
@@ -171,7 +189,7 @@ class BilderAlt
         return FilesModel::findByPath($path);
     }
 
-    public function updateMetaInformation($metaData, string $altText, ?string $language = 'de'): string
+    public function updateMetaInformation($metaData, string $altText, ?string $language = 'de', ?string $rawAltText = null): string
     {
         $meta = StringUtil::deserialize($metaData, true);
 
@@ -180,6 +198,10 @@ class BilderAlt
         } else {
             $meta[$language]['alt'] = $altText;
         }
+
+        // Kept separately (without prefix/suffix) so a later regeneration never
+        // feeds the affix back to the AI as "existing alt text" context.
+        $meta[$language]['bilderAltRawAlt'] = $rawAltText ?? $altText;
 
         return serialize($meta);
     }
@@ -317,6 +339,9 @@ class BilderAlt
             return null;
         }
 
-        return $metaArray[$isoCode]['alt'] ?? null;
+        // Prefer the raw (un-affixed) text so a configured prefix/suffix is never
+        // sent back to the AI as context, even if it was applied by an older
+        // config value. Falls back to 'alt' for entries saved before this field existed.
+        return $metaArray[$isoCode]['bilderAltRawAlt'] ?? $metaArray[$isoCode]['alt'] ?? null;
     }
 }
