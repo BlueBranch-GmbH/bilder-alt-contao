@@ -117,6 +117,11 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.x - 2026-07-24
+
+- Add configurable alt text prefix/suffix, appended after successful generation and never sent to the AI
+- Fix existing alt text used as generation context leaking across languages, which could cause alt texts to be generated in the wrong language
+
 ### 1.6.x - 2026-02-22
 
 - Add AI-powered SEO title and meta description generation for pages
