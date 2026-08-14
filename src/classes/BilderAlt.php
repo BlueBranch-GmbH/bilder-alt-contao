@@ -17,6 +17,7 @@ class BilderAlt
 
     private HttpClientInterface $httpClient;
     private ?array $availableLanguagesCache = null;
+    private array $altAffixCache = [];
 
     public function __construct(HttpClientInterface $httpClient)
     {
@@ -135,8 +136,8 @@ class BilderAlt
 
             if ($statusCode >= 200 && $statusCode < 300 && !empty($json['altTag'])) {
                 $rawAltTag = $json['altTag'];
-                $altTag = $this->applyAltAffixes($rawAltTag);
                 $isoCode = $storageKey ?? $this->getIsoCodeFromLanguage($language);
+                $altTag = $this->applyAltAffixes($rawAltTag, $isoCode);
                 $this->updateImageAltText($imagePath, $altTag, $isoCode, $rawAltTag);
                 return array_merge(['success' => true, 'statusCode' => $statusCode], $json, ['altTag' => $altTag]);
             }
@@ -149,10 +150,9 @@ class BilderAlt
         }
     }
 
-    private function applyAltAffixes(string $altTag): string
+    private function applyAltAffixes(string $altTag, string $isoCode): string
     {
-        $prefix = (string) (Config::get('bilderAltAltPrefix') ?? '');
-        $suffix = (string) (Config::get('bilderAltAltSuffix') ?? '');
+        ['prefix' => $prefix, 'suffix' => $suffix] = $this->getAltAffixesForLanguage($isoCode);
 
         if ($prefix !== '') {
             $prefix .= ' ';
@@ -163,6 +163,41 @@ class BilderAlt
         }
 
         return $prefix . $altTag . $suffix;
+    }
+
+    /**
+     * Resolves the prefix/suffix for a given root-page language code, falling
+     * back to the global bilderAltAltPrefix/bilderAltAltSuffix settings when
+     * the root page has no override (or none can be found for the language).
+     */
+    private function getAltAffixesForLanguage(string $isoCode): array
+    {
+        if (isset($this->altAffixCache[$isoCode])) {
+            return $this->altAffixCache[$isoCode];
+        }
+
+        $prefix = (string) (Config::get('bilderAltAltPrefix') ?? '');
+        $suffix = (string) (Config::get('bilderAltAltSuffix') ?? '');
+
+        if (class_exists(PageModel::class)) {
+            $t = PageModel::getTable();
+            $root = PageModel::findOneBy(["$t.type=?", "$t.language=?"], ['root', $isoCode]);
+
+            if ($root !== null) {
+                $rootPrefix = trim((string) $root->bilderAltAltPrefix);
+                $rootSuffix = trim((string) $root->bilderAltAltSuffix);
+
+                if ($rootPrefix !== '') {
+                    $prefix = $rootPrefix;
+                }
+
+                if ($rootSuffix !== '') {
+                    $suffix = $rootSuffix;
+                }
+            }
+        }
+
+        return $this->altAffixCache[$isoCode] = ['prefix' => $prefix, 'suffix' => $suffix];
     }
 
     public function updateImageAltText(string $path, string $altText, ?string $language = null, ?string $rawAltText = null): void
