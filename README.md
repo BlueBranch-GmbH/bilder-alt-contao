@@ -117,6 +117,11 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.1 - 2026-08-14
+
+- Make the alt text prefix/suffix language-aware: each root page can now override the prefix/suffix for its language, with the global setting as fallback
+- Rename the global prefix/suffix settings to "... (global)" to make the override behaviour clear
+
 ### 1.7.x - 2026-07-24
 
 - Add configurable alt text prefix/suffix, appended after successful generation and never sent to the AI
