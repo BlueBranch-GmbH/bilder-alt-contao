@@ -117,6 +117,13 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.2 - 2026-09-29
+
+- Fix automatic alt text generation on upload for non-public folders
+- Fix batch processing skipping the last item when the available credits match exactly
+- Keep generated alt texts within the configured maximum length including prefix/suffix
+- Stop processing further uploaded files once the credits are used up
+
 ### 1.7.1 - 2026-08-14
 
 - Make the alt text prefix/suffix language-aware: each root page can now override the prefix/suffix for its language, with the global setting as fallback
