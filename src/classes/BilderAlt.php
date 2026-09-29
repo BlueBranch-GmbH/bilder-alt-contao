@@ -117,8 +117,11 @@ class BilderAlt
                 $fields['contextUrl'] = $contextUrl;
             }
 
+            $isoCode = $storageKey ?? $this->getIsoCodeFromLanguage($language);
+
+            // Reserve room for prefix/suffix so the final alt text stays within the limit
             $maxLength = (int) (Config::get('bilderAltMaxLength') ?: 125);
-            $fields['maxLength'] = (string) $maxLength;
+            $fields['maxLength'] = (string) max(1, $maxLength - $this->getAltAffixLength($isoCode));
 
             $form = new FormDataPart($fields);
             $url = self::API_BASE_URL . '/api/v1/openai/upload-image';
@@ -136,7 +139,6 @@ class BilderAlt
 
             if ($statusCode >= 200 && $statusCode < 300 && !empty($json['altTag'])) {
                 $rawAltTag = $json['altTag'];
-                $isoCode = $storageKey ?? $this->getIsoCodeFromLanguage($language);
                 $altTag = $this->applyAltAffixes($rawAltTag, $isoCode);
                 $this->updateImageAltText($imagePath, $altTag, $isoCode, $rawAltTag);
                 return array_merge(['success' => true, 'statusCode' => $statusCode], $json, ['altTag' => $altTag]);
@@ -163,6 +165,14 @@ class BilderAlt
         }
 
         return $prefix . $altTag . $suffix;
+    }
+
+    /**
+     * Number of characters applyAltAffixes() adds, including the separating spaces.
+     */
+    private function getAltAffixLength(string $isoCode): int
+    {
+        return mb_strlen($this->applyAltAffixes('', $isoCode));
     }
 
     /**

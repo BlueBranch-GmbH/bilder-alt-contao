@@ -78,15 +78,15 @@ function pageBatch() {
         progressText.textContent = processedCount + '/' + totalPages + ' verarbeitet';
     }
 
+    // Reserves credits for the next request; stopping is left to processQueue()
     function updateCredits(used) {
-        currentCredits = Math.max(0, currentCredits - used);
-        if (creditsCount) creditsCount.textContent = currentCredits;
-        if (currentCredits <= 0) {
+        if (currentCredits < used) {
             shouldStop = true;
             showNotification('[KI Seiten] Keine Credits mehr verfügbar. Verarbeitung wird gestoppt.', 'error');
-            finishProcessing();
             return false;
         }
+        currentCredits -= used;
+        if (creditsCount) creditsCount.textContent = currentCredits;
         return true;
     }
 
@@ -105,11 +105,13 @@ function pageBatch() {
 
     async function processPage(pageItem) {
         if (shouldStop) return;
+
+        var cost = (pageItem.needsTitle ? 2 : 0) + (pageItem.needsDescription ? 2 : 0);
+        if (!updateCredits(cost)) return;
         updateStatus(pageItem, 'Wird verarbeitet...', 'processing');
 
         try {
             if (pageItem.needsTitle && pageItem.needsDescription) {
-                if (!updateCredits(4)) return;
 
                 var fd1 = new FormData();
                 fd1.append('pageId', pageItem.id);
@@ -143,7 +145,6 @@ function pageBatch() {
                     updateStatus(pageItem, 'Erfolgreich', 'success');
                 }
             } else if (pageItem.needsTitle) {
-                if (!updateCredits(2)) return;
                 var fd = new FormData();
                 fd.append('pageId', pageItem.id);
                 fd.append('save', '1');
@@ -159,7 +160,6 @@ function pageBatch() {
                     updateStatus(pageItem, data.message || 'Fehler', 'error');
                 }
             } else if (pageItem.needsDescription) {
-                if (!updateCredits(2)) return;
                 var fd = new FormData();
                 fd.append('pageId', pageItem.id);
                 fd.append('save', '1');

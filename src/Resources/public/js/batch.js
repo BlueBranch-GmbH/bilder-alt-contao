@@ -53,17 +53,18 @@ function batch() {
         progressText.textContent = processedCount + '/' + totalFiles + ' verarbeitet';
     }
 
+    // Reserves credits for the next request; stopping is left to processQueue()
     function updateCredits(used) {
         used = used || 1;
-        currentCredits = Math.max(0, currentCredits - used);
-        creditsCount.textContent = currentCredits;
 
-        if (currentCredits <= 0) {
+        if (currentCredits < used) {
             shouldStop = true;
             showNotification('[Bilder Alt] Keine Credits mehr verfügbar. Verarbeitung wird gestoppt.', 'error');
-            finishProcessing();
             return false;
         }
+
+        currentCredits -= used;
+        creditsCount.textContent = currentCredits;
         return true;
     }
 
@@ -117,9 +118,8 @@ function batch() {
         var files = [file1];
         if (file2) files.push(file2);
 
-        files.forEach(function (f) { updateStatusCell(f, 'Wird verarbeitet...', 'processing'); });
-
         if (!updateCredits(file1.creditCost)) return Promise.resolve();
+        updateStatusCell(file1, 'Wird verarbeitet...', 'processing');
 
         return processApiRequest(file1).then(function (result1) {
             handleResult(file1, result1);
@@ -129,6 +129,7 @@ function batch() {
             if (!file2 || shouldStop) return;
 
             if (!updateCredits(file2.creditCost)) return;
+            updateStatusCell(file2, 'Wird verarbeitet...', 'processing');
 
             return processApiRequest(file2).then(function (result2) {
                 handleResult(file2, result2);

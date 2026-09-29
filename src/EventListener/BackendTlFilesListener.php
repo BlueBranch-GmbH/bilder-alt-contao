@@ -125,7 +125,7 @@ class BackendTlFilesListener extends Backend
             $href,
             StringUtil::specialchars($title),
             $row['id'],
-            $hasAltInAllLanguages ?: 'no-alt',
+            $hasAltInAllLanguages ? '' : 'no-alt',
             Image::getHtml($icon, $label, 'style="width: 16px; height: 16px;"')
         );
     }

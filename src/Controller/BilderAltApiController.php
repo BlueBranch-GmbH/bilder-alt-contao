@@ -73,7 +73,7 @@ class BilderAltApiController extends AbstractController
         }
 
         if (!$this->isSupportedImage($filePath)) {
-            return $this->buildErrorResponse('[Bilder Alt] Nicht unterstütztes Bildformat. Nur JPG, JPEG, PNG, GIF und WEBP werden unterstützt.');
+            return $this->buildErrorResponse('[Bilder Alt] Nicht unterstütztes Bildformat. Unterstützt werden: ' . strtoupper(implode(', ', Constants::ALLOWED_EXTENSIONS)) . '.');
         }
 
         $absolutePath = $this->bilderAlt->getAbsolutePathFromRelative($filePath);

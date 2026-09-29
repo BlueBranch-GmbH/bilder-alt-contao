@@ -40,21 +40,24 @@ class UploadListener
         foreach ($files as $rawPath) {
             $filePath = urldecode($rawPath);
 
-            if (!$this->isValidImage($filePath)) {
-                continue;
-            }
-
+            // Always work with the absolute path: relative paths would be resolved
+            // against the working directory (public/) and only exist for public folders.
             $absolutePath = $this->bilderAlt->getAbsolutePathFromRelative($filePath);
             if (!$absolutePath || !file_exists($absolutePath)) {
                 continue;
             }
 
+            if (!$this->isValidImage($absolutePath)) {
+                continue;
+            }
+
             $errorResponses = [];
+            $outOfCredits = false;
 
             foreach ($languages as $isoCode => $language) {
                 $keywords = $this->bilderAlt->getKeywords($filePath, $isoCode);
                 $response = $this->bilderAlt->sendToExternalApi(
-                    $filePath,
+                    $absolutePath,
                     $apiKey,
                     $language,
                     implode(',', $keywords),
@@ -67,7 +70,8 @@ class UploadListener
                 }
 
                 // Break early on 402 – no further attempts
-                if (!empty($response['statusCode']) && (int)$response['statusCode'] === 402) {
+                if ((int) ($response['statusCode'] ?? 0) === 402) {
+                    $outOfCredits = true;
                     break;
                 }
             }
@@ -75,6 +79,11 @@ class UploadListener
             if (!empty($errorResponses)) {
                 $msg = $this->getErrorMessage($errorResponses[0]);
                 $this->printError('[Bilder Alt] Fehler bei der Verarbeitung: ' . $msg);
+            }
+
+            // Without credits the remaining files would fail as well
+            if ($outOfCredits) {
+                break;
             }
         }
     }
@@ -106,7 +115,7 @@ class UploadListener
 
     private function getErrorMessage(array $response): string
     {
-        return $response['statusCode'] === 402
+        return (int) ($response['statusCode'] ?? 0) === 402
             ? $GLOBALS['TL_LANG']['tl_settings']['bilderAltNoCredits']
             : $response['message']
             ?? 'Unbekannter Fehler';
