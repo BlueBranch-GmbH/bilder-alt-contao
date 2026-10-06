@@ -117,6 +117,13 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.3 - 2026-10-06
+
+- Check permissions and file mounts before generating alt texts for a file path, and restrict the path to the upload folder
+- Escape generated alt texts and error messages in backend notifications
+- Escape the file path in the file manager button
+- Fix a JavaScript error when a notification was removed after navigating in the backend
+
 ### 1.7.2 - 2026-09-29
 
 - Fix automatic alt text generation on upload for non-public folders
