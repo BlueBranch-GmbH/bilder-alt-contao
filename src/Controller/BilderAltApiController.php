@@ -4,12 +4,16 @@ namespace Bluebranch\BilderAlt\Controller;
 
 use Bluebranch\BilderAlt\classes\BilderAlt;
 use Bluebranch\BilderAlt\config\Constants;
+use Bluebranch\BilderAlt\Security\BilderAltPermissions;
 use Contao\Config;
+use Contao\CoreBundle\Security\ContaoCorePermissions;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
+use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
@@ -18,10 +22,17 @@ use Symfony\Component\Routing\Annotation\Route;
 class BilderAltApiController extends AbstractController
 {
     private BilderAlt $bilderAlt;
+    private string $projectDir;
+    private string $uploadPath;
 
-    public function __construct(BilderAlt $bilderAlt)
-    {
+    public function __construct(
+        BilderAlt $bilderAlt,
+        #[Autowire('%kernel.project_dir%')] string $projectDir,
+        #[Autowire('%contao.upload_path%')] string $uploadPath
+    ) {
         $this->bilderAlt = $bilderAlt;
+        $this->projectDir = $projectDir;
+        $this->uploadPath = $uploadPath;
     }
 
     /**
@@ -47,11 +58,24 @@ class BilderAltApiController extends AbstractController
      */
     public function generateByPath(Request $request): JsonResponse
     {
+        if (!BilderAltPermissions::canCreateSingle() && !BilderAltPermissions::canCreateBatch()) {
+            return $this->buildErrorResponse('[Bilder Alt] Keine Berechtigung zum Generieren von Alt-Texten', Response::HTTP_FORBIDDEN);
+        }
+
         $filePath = urldecode($request->request->get('path', ''));
         $contextUrl = $request->request->get('contextUrl', '');
 
         if (empty($filePath)) {
             return $this->buildErrorResponse('[Bilder Alt] Kein Bildpfad angegeben');
+        }
+
+        $filePath = $this->normalizeUploadPath($filePath);
+        if (null === $filePath) {
+            return $this->buildErrorResponse('[Bilder Alt] Ungültiger Bildpfad', Response::HTTP_FORBIDDEN);
+        }
+
+        if (!$this->isGranted(ContaoCorePermissions::USER_CAN_ACCESS_PATH, $filePath)) {
+            return $this->buildErrorResponse('[Bilder Alt] Kein Zugriff auf diese Datei', Response::HTTP_FORBIDDEN);
         }
 
         $apiKey = $this->getApiKey();
@@ -76,8 +100,8 @@ class BilderAltApiController extends AbstractController
             return $this->buildErrorResponse('[Bilder Alt] Nicht unterstütztes Bildformat. Unterstützt werden: ' . strtoupper(implode(', ', Constants::ALLOWED_EXTENSIONS)) . '.');
         }
 
-        $absolutePath = $this->bilderAlt->getAbsolutePathFromRelative($filePath);
-        if (!$absolutePath || !file_exists($absolutePath)) {
+        $absolutePath = Path::join($this->projectDir, $filePath);
+        if (!is_file($absolutePath)) {
             return $this->buildErrorResponse('[Bilder Alt] Datei nicht gefunden: ' . $filePath, Response::HTTP_NOT_FOUND);
         }
 
@@ -112,6 +136,25 @@ class BilderAltApiController extends AbstractController
         } catch (\Exception $e) {
             return $this->buildErrorResponse('[Bilder Alt] Fehler bei der Verarbeitung: ' . $e->getMessage());
         }
+    }
+
+    /**
+     * Liefert den kanonischen, projekt-relativen Pfad oder null, wenn er nicht im Upload-Verzeichnis liegt.
+     */
+    private function normalizeUploadPath(string $path): ?string
+    {
+        if (str_contains($path, "\0")) {
+            return null;
+        }
+
+        $path = Path::canonicalize(ltrim($path, '/'));
+        $uploadPath = Path::canonicalize($this->uploadPath);
+
+        if (!Path::isBasePath($uploadPath, $path) || $path === $uploadPath) {
+            return null;
+        }
+
+        return $path;
     }
 
     private function getApiKey(): ?string

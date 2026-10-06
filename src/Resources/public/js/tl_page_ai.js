@@ -98,8 +98,9 @@ function seitenAiShowNotification(message, type) {
         padding: '10px 10px 10px 50px',
         borderRadius: '3px',
         boxShadow: '0 2px 5px rgba(0,0,0,0.2)',
+        whiteSpace: 'pre-line',
     });
-    div.innerHTML = message;
+    div.textContent = message;
     container.appendChild(div);
 
     setTimeout(function () {

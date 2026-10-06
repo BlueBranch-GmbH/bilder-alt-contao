@@ -29,14 +29,14 @@ async function generateImageTag($event, el) {
             let message;
             if (succeeded.length === 1) {
                 const altText = succeeded[0]?.altTag || '';
-                message = `Alt-Text erfolgreich generiert: &ldquo;${altText}&rdquo;`;
+                message = `Alt-Text erfolgreich generiert: „${altText}“`;
             } else {
                 const lines = succeeded.map(item => {
                     const lang = (item.isoCode || '').toUpperCase();
                     const altText = item?.altTag || '';
-                    return `<b>${lang}:</b> &ldquo;${altText}&rdquo;`;
+                    return `${lang}: „${altText}“`;
                 });
-                message = `Alt-Texte für folgende Sprachen generiert:<br>${lines.join('<br>')}`;
+                message = `Alt-Texte für folgende Sprachen generiert:\n${lines.join('\n')}`;
             }
             showNotification(message, 'success');
             updateElLink(el);
@@ -91,7 +91,8 @@ function showNotification(message, type = 'info') {
     notification.style.padding = '10px 10px 10px 50px';
     notification.style.borderRadius = '3px';
     notification.style.boxShadow = '0 2px 5px rgba(0,0,0,0.2)';
-    notification.innerHTML = message;
+    notification.style.whiteSpace = 'pre-line';
+    notification.textContent = message;
 
     container.appendChild(notification);
 
@@ -100,10 +101,10 @@ function showNotification(message, type = 'info') {
         notification.style.opacity = '0';
 
         setTimeout(() => {
-            container.removeChild(notification);
+            notification.remove();
 
             if (container.children.length === 0) {
-                document.body.removeChild(container);
+                container.remove();
             }
         }, 500);
     }, 5000);

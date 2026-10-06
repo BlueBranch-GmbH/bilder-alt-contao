@@ -124,7 +124,7 @@ class BackendTlFilesListener extends Backend
             '<a href="%s" title="%s" data-file-path="%s" onclick="generateImageTag(event, this)" class="bilder_alt_button %s">%s</a>',
             $href,
             StringUtil::specialchars($title),
-            $row['id'],
+            StringUtil::specialchars($row['id']),
             $hasAltInAllLanguages ? '' : 'no-alt',
             Image::getHtml($icon, $label, 'style="width: 16px; height: 16px;"')
         );
