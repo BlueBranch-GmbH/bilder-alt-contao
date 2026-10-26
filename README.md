@@ -117,6 +117,12 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.4 - 2026-10-26
+
+- Check page access and edit permissions (including field permissions) before generating and saving SEO titles/descriptions, and save through the page model with a version entry
+- Enable the CSRF check on the generate endpoints; requests now send the request token
+- Read the API key from the `BILDER_ALT_API_KEY` environment variable (fallback: backend setting) and mask the key in the settings form
+
 ### 1.7.3 - 2026-10-06
 
 - Check permissions and file mounts before generating alt texts for a file path, and restrict the path to the upload folder
