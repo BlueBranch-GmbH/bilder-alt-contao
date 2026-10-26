@@ -12,7 +12,6 @@ bilder_alt_generate_by_path:
     methods: [POST]
     defaults:
         _scope: backend
-        _token_check: false
 
 bilder_alt_batch:
     path: '%contao.backend.route_prefix%/bilder-alt/batch'
@@ -27,7 +26,6 @@ bilder_alt_page_generate_title:
     methods: [POST]
     defaults:
         _scope: backend
-        _token_check: false
 
 bilder_alt_page_generate_description:
     path: /contao/bilder-alt/api/v1/page/generate-description
@@ -35,7 +33,6 @@ bilder_alt_page_generate_description:
     methods: [POST]
     defaults:
         _scope: backend
-        _token_check: false
 
 bilder_alt_seiten_batch:
     path: '%contao.backend.route_prefix%/bilder-alt/seiten-batch'

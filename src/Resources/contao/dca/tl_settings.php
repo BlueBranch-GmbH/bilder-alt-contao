@@ -11,7 +11,13 @@ $GLOBALS['TL_DCA']['tl_settings']['palettes']['default'] = str_replace(
 $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltApiKey'] = [
     'label' => &$GLOBALS['TL_LANG']['tl_settings']['bilderAltApiKey'],
     'inputType' => 'text',
-    'eval' => ['mandatory' => false, 'tl_class' => 'w50', 'preserveTags' => true]
+    'eval' => ['mandatory' => false, 'tl_class' => 'w50', 'preserveTags' => true, 'autocomplete' => 'off'],
+    'load_callback' => [
+        ['Bluebranch\BilderAlt\EventListener\TlSettingsCallback', 'maskApiKey']
+    ],
+    'save_callback' => [
+        ['Bluebranch\BilderAlt\EventListener\TlSettingsCallback', 'saveApiKey']
+    ]
 ];
 
 $GLOBALS['TL_DCA']['tl_settings']['fields']['bilderAltAutoGenerate'] = [

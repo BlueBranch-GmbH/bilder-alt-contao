@@ -10,15 +10,13 @@ async function generateImageTag($event, el) {
     el.classList.add('loading');
 
     const formData = new FormData();
+    formData.append('REQUEST_TOKEN', Contao.request_token);
     formData.append('path', path);
     formData.append('contextUrl', window.location.hostname);
 
     try {
         const response = await fetch('/contao/bilder-alt/api/v1/generate/path', {
             method: 'POST',
-            headers: {
-                'X-Requested-With': 'XMLHttpRequest'
-            },
             body: formData
         });
 

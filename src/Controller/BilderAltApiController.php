@@ -17,7 +17,7 @@ use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Routing\Annotation\Route;
 
 /**
- * @Route("/contao/bilder-alt/api/v1", defaults={"_scope" = "backend", "_token_check" = false})
+ * @Route("/contao/bilder-alt/api/v1", defaults={"_scope" = "backend"})
  */
 class BilderAltApiController extends AbstractController
 {
@@ -159,7 +159,7 @@ class BilderAltApiController extends AbstractController
 
     private function getApiKey(): ?string
     {
-        return Config::get('bilderAltApiKey') ?: null;
+        return $this->bilderAlt->getApiKey();
     }
 
     private function buildErrorResponse(string $message, int $status = Response::HTTP_INTERNAL_SERVER_ERROR): JsonResponse

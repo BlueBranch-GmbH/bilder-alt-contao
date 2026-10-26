@@ -70,6 +70,7 @@ function batch() {
 
     function processApiRequest(fileItem) {
         var formData = new FormData();
+        formData.append('REQUEST_TOKEN', Contao.request_token);
         formData.append('path', fileItem.path);
         formData.append('contextUrl', window.location.hostname);
 
@@ -79,7 +80,6 @@ function batch() {
 
         return fetch('/contao/bilder-alt/api/v1/generate/path', {
             method: 'POST',
-            headers: { 'X-Requested-With': 'XMLHttpRequest' },
             body: formData
         }).then(function (res) { return res.json(); });
     }

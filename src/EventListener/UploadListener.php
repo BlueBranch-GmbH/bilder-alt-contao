@@ -28,7 +28,7 @@ class UploadListener
             return;
         }
 
-        $apiKey = Config::get('bilderAltApiKey');
+        $apiKey = $this->bilderAlt->getApiKey();
         if (empty($apiKey)) {
             $this->printError('[Bilder Alt] Fehlender API Key');
             return;

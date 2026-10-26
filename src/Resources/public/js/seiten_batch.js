@@ -114,22 +114,22 @@ function pageBatch() {
             if (pageItem.needsTitle && pageItem.needsDescription) {
 
                 var fd1 = new FormData();
+                fd1.append('REQUEST_TOKEN', Contao.request_token);
                 fd1.append('pageId', pageItem.id);
                 fd1.append('save', '1');
 
                 var fd2 = new FormData();
+                fd2.append('REQUEST_TOKEN', Contao.request_token);
                 fd2.append('pageId', pageItem.id);
                 fd2.append('save', '1');
 
                 var [res1, res2] = await Promise.all([
                     fetch('/contao/bilder-alt/api/v1/page/generate-title', {
                         method: 'POST',
-                        headers: {'X-Requested-With': 'XMLHttpRequest'},
                         body: fd1,
                     }).then(function (r) { return r.json(); }),
                     fetch('/contao/bilder-alt/api/v1/page/generate-description', {
                         method: 'POST',
-                        headers: {'X-Requested-With': 'XMLHttpRequest'},
                         body: fd2,
                     }).then(function (r) { return r.json(); }),
                 ]);
@@ -146,11 +146,11 @@ function pageBatch() {
                 }
             } else if (pageItem.needsTitle) {
                 var fd = new FormData();
+                fd.append('REQUEST_TOKEN', Contao.request_token);
                 fd.append('pageId', pageItem.id);
                 fd.append('save', '1');
                 var data = await fetch('/contao/bilder-alt/api/v1/page/generate-title', {
                     method: 'POST',
-                    headers: {'X-Requested-With': 'XMLHttpRequest'},
                     body: fd,
                 }).then(function (r) { return r.json(); });
                 if (data.success) {
@@ -161,11 +161,11 @@ function pageBatch() {
                 }
             } else if (pageItem.needsDescription) {
                 var fd = new FormData();
+                fd.append('REQUEST_TOKEN', Contao.request_token);
                 fd.append('pageId', pageItem.id);
                 fd.append('save', '1');
                 var data = await fetch('/contao/bilder-alt/api/v1/page/generate-description', {
                     method: 'POST',
-                    headers: {'X-Requested-With': 'XMLHttpRequest'},
                     body: fd,
                 }).then(function (r) { return r.json(); });
                 if (data.success) {

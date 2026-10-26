@@ -169,7 +169,7 @@ class BilderAltBatchController extends AbstractBackendController
             ];
         }, $imageModels);
 
-        $apiKey = Config::get('bilderAltApiKey');
+        $apiKey = $this->bilderAlt->getApiKey();
         $credits = !empty($apiKey) ? $this->bilderAlt->getCreditsBalanceSafe($apiKey) : 0;
 
         $GLOBALS['TL_CSS'][] = '/bundles/bilderalt/css/batch.css';

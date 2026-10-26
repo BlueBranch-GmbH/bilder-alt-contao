@@ -5,12 +5,12 @@ async function seitenAiGenerateTitle(pageId, btn) {
     btn.innerHTML += '<span class="bilder-alt-spinner"></span>';
 
     const formData = new FormData();
+    formData.append('REQUEST_TOKEN', Contao.request_token);
     formData.append('pageId', pageId);
 
     try {
         const response = await fetch('/contao/bilder-alt/api/v1/page/generate-title', {
             method: 'POST',
-            headers: {'X-Requested-With': 'XMLHttpRequest'},
             body: formData,
         });
 
@@ -43,12 +43,12 @@ async function seitenAiGenerateDescription(pageId, btn) {
     btn.innerHTML += '<span class="bilder-alt-spinner"></span>';
 
     const formData = new FormData();
+    formData.append('REQUEST_TOKEN', Contao.request_token);
     formData.append('pageId', pageId);
 
     try {
         const response = await fetch('/contao/bilder-alt/api/v1/page/generate-description', {
             method: 'POST',
-            headers: {'X-Requested-With': 'XMLHttpRequest'},
             body: formData,
         });
 

@@ -63,6 +63,27 @@ class BilderAlt
         }
     }
 
+    /**
+     * Die Umgebungsvariable BILDER_ALT_API_KEY hat Vorrang vor der Einstellung im Backend.
+     */
+    public function getApiKey(): ?string
+    {
+        $key = $_SERVER['BILDER_ALT_API_KEY'] ?? $_ENV['BILDER_ALT_API_KEY'] ?? getenv('BILDER_ALT_API_KEY');
+
+        if (!\is_string($key) || '' === trim($key)) {
+            $key = Config::get('bilderAltApiKey');
+        }
+
+        return \is_string($key) && '' !== trim($key) ? trim($key) : null;
+    }
+
+    public function isApiKeyFromEnvironment(): bool
+    {
+        $key = $_SERVER['BILDER_ALT_API_KEY'] ?? $_ENV['BILDER_ALT_API_KEY'] ?? getenv('BILDER_ALT_API_KEY');
+
+        return \is_string($key) && '' !== trim($key);
+    }
+
     public function getAvailableLanguages(): array
     {
         if ($this->availableLanguagesCache !== null) {
