@@ -117,6 +117,10 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.5 - 2026-10-28
+
+- Require PHP 8.1 or higher (the code already used PHP 8 syntax) and declare `symfony/http-client` and `symfony/mime` as explicit dependencies
+
 ### 1.7.4 - 2026-10-26
 
 - Check page access and edit permissions (including field permissions) before generating and saving SEO titles/descriptions, and save through the page model with a version entry
