@@ -12,7 +12,6 @@ use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\Filesystem\Path;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -27,8 +26,8 @@ class BilderAltApiController extends AbstractController
 
     public function __construct(
         BilderAlt $bilderAlt,
-        #[Autowire('%kernel.project_dir%')] string $projectDir,
-        #[Autowire('%contao.upload_path%')] string $uploadPath
+        string $projectDir,
+        string $uploadPath
     ) {
         $this->bilderAlt = $bilderAlt;
         $this->projectDir = $projectDir;

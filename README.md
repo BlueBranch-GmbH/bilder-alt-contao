@@ -117,6 +117,10 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.6 - 2026-10-28
+
+- Fix the batch alt text generation on Contao 4: the `#[Autowire]` attributes in the API controller require Symfony 6.1+, the arguments are now configured explicitly in `services.yml`
+
 ### 1.7.5 - 2026-10-28
 
 - Require PHP 8.1 or higher (the code already used PHP 8 syntax) and declare `symfony/http-client` and `symfony/mime` as explicit dependencies

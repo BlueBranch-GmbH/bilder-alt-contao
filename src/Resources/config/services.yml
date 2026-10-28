@@ -8,6 +8,11 @@ services:
         resource: '../../../src'
         exclude: '../../../src/{Resources,DependencyInjection,Model,Tests,Migrations}'
 
+    Bluebranch\BilderAlt\Controller\BilderAltApiController:
+        arguments:
+            $projectDir: '%kernel.project_dir%'
+            $uploadPath: '%contao.upload_path%'
+
     Bluebranch\BilderAlt\EventListener\UploadListener:
         tags:
             - { name: contao.hook, hook: postUpload, method: '__invoke' }
