@@ -53,7 +53,7 @@ class BackendTlFilesListener extends Backend
                 'label' => ['Alt Text', 'Alt Text generieren'],
                 'href' => 'key=',
                 'icon' => self::IMAGE_AI,
-                'button_callback' => [$this, 'renderButton'],
+                'button_callback' => [self::class, 'renderButton'],
             ];
         }
 

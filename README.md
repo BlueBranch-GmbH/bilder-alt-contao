@@ -117,6 +117,10 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.7 - 2026-10-28
+
+- Fix the file manager crashing on Contao 4 ("could not be converted to string"): the file button callback is now registered with the class name instead of the object
+
 ### 1.7.6 - 2026-10-28
 
 - Fix the batch alt text generation on Contao 4: the `#[Autowire]` attributes in the API controller require Symfony 6.1+, the arguments are now configured explicitly in `services.yml`
