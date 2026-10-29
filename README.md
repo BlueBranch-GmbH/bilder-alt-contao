@@ -117,6 +117,10 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.8 - 2026-10-29
+
+- Scale large images (JPG, PNG, GIF, WebP) down to 1024 px on the longest edge before sending them to the API, which makes uploads much smaller and faster. If scaling fails, the original file is sent
+
 ### 1.7.7 - 2026-10-28
 
 - Fix the file manager crashing on Contao 4 ("could not be converted to string"): the file button callback is now registered with the class name instead of the object

@@ -5,6 +5,8 @@ namespace Bluebranch\BilderAlt\classes;
 use Contao\Config;
 use Contao\FilesModel;
 use Contao\PageModel;
+use Contao\Image\DeferredImageInterface;
+use Contao\Image\DeferredResizerInterface;
 use Contao\StringUtil;
 use Contao\System;
 use Symfony\Component\Mime\Part\DataPart;
@@ -15,9 +17,14 @@ class BilderAlt
 {
     private const API_BASE_URL = 'https://app.bilder-alt.de';
 
+    // Longest edge of the image sent to the API; larger images are scaled down first
+    private const MAX_IMAGE_EDGE = 1024;
+    private const RESIZABLE_EXTENSIONS = ['jpg', 'jpeg', 'png', 'gif', 'webp'];
+
     private HttpClientInterface $httpClient;
     private ?array $availableLanguagesCache = null;
     private array $altAffixCache = [];
+    private array $uploadImageCache = [];
 
     public function __construct(HttpClientInterface $httpClient)
     {
@@ -127,7 +134,7 @@ class BilderAlt
         try {
             $fields = [
                 'language' => $language,
-                'image' => DataPart::fromPath($imagePath),
+                'image' => DataPart::fromPath($this->getUploadImagePath($imagePath)),
             ];
 
             if (!empty($keywords)) {
@@ -171,6 +178,51 @@ class BilderAlt
         } catch (\Exception $e) {
             return ['success' => false, 'message' => 'Exception: ' . $e->getMessage()];
         }
+    }
+
+    /**
+     * Returns a downscaled copy (longest edge MAX_IMAGE_EDGE) of large raster images so the
+     * upload stays small. Contao's image factory caches the result in assets/images, so
+     * repeated calls (one per language) do not resize again. Falls back to the original
+     * file whenever resizing is not possible.
+     */
+    private function getUploadImagePath(string $imagePath): string
+    {
+        if (isset($this->uploadImageCache[$imagePath])) {
+            return $this->uploadImageCache[$imagePath];
+        }
+
+        $resized = $imagePath;
+
+        try {
+            $extension = strtolower(pathinfo($imagePath, PATHINFO_EXTENSION));
+            $size = \in_array($extension, self::RESIZABLE_EXTENSIONS, true) ? @getimagesize($imagePath) : false;
+
+            if ($size && max($size[0], $size[1]) > self::MAX_IMAGE_EDGE) {
+                $container = System::getContainer();
+                $image = $container->get('contao.image.factory')->create(
+                    $imagePath,
+                    [self::MAX_IMAGE_EDGE, self::MAX_IMAGE_EDGE, 'proportional']
+                );
+
+                // Contao 5 may only have announced the resized file (deferred resizing)
+                if ($image instanceof DeferredImageInterface) {
+                    $resizer = $container->get('contao.image.resizer');
+                    if ($resizer instanceof DeferredResizerInterface) {
+                        $image = $resizer->resizeDeferredImage($image) ?? $image;
+                    }
+                }
+
+                $path = $image->getPath();
+                if (is_file($path) && filesize($path) > 0 && filesize($path) < filesize($imagePath)) {
+                    $resized = $path;
+                }
+            }
+        } catch (\Throwable $e) {
+            $resized = $imagePath;
+        }
+
+        return $this->uploadImageCache[$imagePath] = $resized;
     }
 
     private function applyAltAffixes(string $altTag, string $isoCode): string
