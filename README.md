@@ -117,6 +117,11 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.9 - 2026-10-30
+
+- Set timeouts for all API requests (10 seconds for the credits balance, 60 seconds per request for generating), so a slow or unreachable API no longer blocks the batch page, the settings or an upload
+- Errors of the automatic generation on upload are now shown as a regular backend message instead of being echoed directly into the upload response
+
 ### 1.7.8 - 2026-10-29
 
 - Scale large images (JPG, PNG, GIF, WebP) down to 1024 px on the longest edge before sending them to the API, which makes uploads much smaller and faster. If scaling fails, the original file is sent

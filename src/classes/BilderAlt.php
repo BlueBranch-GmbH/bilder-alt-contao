@@ -16,6 +16,8 @@ use Symfony\Contracts\HttpClient\HttpClientInterface;
 class BilderAlt
 {
     private const API_BASE_URL = 'https://app.bilder-alt.de';
+    private const TIMEOUT_CREDITS = 10;
+    private const TIMEOUT_GENERATE = 60;
 
     // Longest edge of the image sent to the API; larger images are scaled down first
     private const MAX_IMAGE_EDGE = 1024;
@@ -41,6 +43,7 @@ class BilderAlt
                     'Accept' => 'application/json',
                     'x-api-key' => $apiKey,
                 ],
+                'timeout' => self::TIMEOUT_CREDITS,
             ]);
 
             $statusCode = $response->getStatusCode();
@@ -160,6 +163,8 @@ class BilderAlt
             $response = $this->httpClient->request('POST', $url, [
                 'headers' => $headers,
                 'body' => $form->bodyToIterable(),
+                'timeout' => self::TIMEOUT_GENERATE,
+                'max_duration' => self::TIMEOUT_GENERATE * 2,
             ]);
 
             $statusCode = $response->getStatusCode();
@@ -355,6 +360,8 @@ class BilderAlt
                     'x-api-key' => $apiKey,
                 ],
                 'json' => $body,
+                'timeout' => self::TIMEOUT_GENERATE,
+                'max_duration' => self::TIMEOUT_GENERATE * 2,
             ]);
 
             $statusCode = $response->getStatusCode();

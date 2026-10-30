@@ -6,6 +6,7 @@ use Bluebranch\BilderAlt\classes\BilderAlt;
 use Bluebranch\BilderAlt\config\Constants;
 use Bluebranch\BilderAlt\Security\BilderAltPermissions;
 use Contao\Config;
+use Contao\Message;
 use Contao\System;
 use Symfony\Component\HttpFoundation\File\File;
 use Symfony\Component\HttpFoundation\RequestStack;
@@ -105,7 +106,7 @@ class UploadListener
 
     private function printError(string $message): void
     {
-        echo '<p class="tl_error">' . htmlspecialchars($message, ENT_QUOTES | ENT_SUBSTITUTE, 'UTF-8') . '</p>';
+        Message::addError($message);
     }
 
     private function isFailedResponse(array $response): bool
