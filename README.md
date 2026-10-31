@@ -117,6 +117,10 @@ Das Team von [www.bluebranch.de](https://www.bluebranch.de/)
 
 ## Changes
 
+### 1.7.10 - 2026-10-31
+
+- Alt text prefix and suffix are now taken from the first published root page of a language (by sorting), consistent with the language selection. Previously an unpublished root page could supply them
+
 ### 1.7.9 - 2026-10-30
 
 - Set timeouts for all API requests (10 seconds for the credits balance, 60 seconds per request for generating), so a slow or unreachable API no longer blocks the batch page, the settings or an upload

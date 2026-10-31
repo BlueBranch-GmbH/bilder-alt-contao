@@ -269,7 +269,12 @@ class BilderAlt
 
         if (class_exists(PageModel::class)) {
             $t = PageModel::getTable();
-            $root = PageModel::findOneBy(["$t.type=?", "$t.language=?"], ['root', $isoCode]);
+            // Same selection as getAvailableLanguages(): published root pages only, first by sorting
+            $root = PageModel::findOneBy(
+                ["$t.type=?", "$t.language=?", "$t.published=?"],
+                ['root', $isoCode, '1'],
+                ['order' => "$t.sorting ASC"]
+            );
 
             if ($root !== null) {
                 $rootPrefix = trim((string) $root->bilderAltAltPrefix);
