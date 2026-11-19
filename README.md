@@ -57,7 +57,7 @@ Die Verarbeitung erfolgt sequenziell mit Fortschrittsanzeige. Jede Generierung k
 - Barrierefreiheit verbessern: Automatisch formulierte, verständliche Beschreibungen
 - SEO unterstützen: Keywords fließen intelligent ein
 - Einfache Einbindung: Kein separates Tool – direkt im Contao Backend nutzbar
-- DSGVO-konform: Datenverarbeitung ausschließlich in Deutschland
+- Transparente Datenverarbeitung: Bilder werden zur Analyse an die API von bilder-alt.de übertragen, die Bilderkennung übernimmt ein KI-Modell von OpenAI. Details stehen in der [Datenschutzerklärung](https://www.bilder-alt.de/datenschutzerklaerung)
 
 # SEO Alt Text Generator - Bilder-Alt.de (EN)
 
